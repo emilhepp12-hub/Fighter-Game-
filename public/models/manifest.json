@@ -1,4 +1,5 @@
 {
   "models": {
+    "f14": { "file": "f14.glb", "rotY": -90, "length": 17, "ultraOnly": true }
   }
 }
