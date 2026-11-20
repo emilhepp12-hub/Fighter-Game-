@@ -24,7 +24,7 @@ canvas{display:block}
 #ov h1{font-size:clamp(40px,10vw,84px);margin:0;font-style:italic;letter-spacing:4px;background:linear-gradient(#fff,#4af 60%,#07c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #09f)}
 #ov p{margin:6px 0;color:#9cf;font-size:15px;line-height:1.6;max-width:560px}
 #go{margin-top:18px;font:inherit;font-size:24px;padding:12px 44px;background:#fd2;color:#210;border:0;border-radius:6px;cursor:pointer;box-shadow:0 5px #a80}
-#tc{position:fixed;right:10px;bottom:70px;display:flex;flex-direction:column;gap:10px;touch-action:none}
+#tc{position:fixed;right:10px;bottom:calc(114px + min(150px,20vh));display:flex;flex-direction:column;gap:10px;touch-action:none}
 #tc div{width:72px;height:46px;border-radius:12px;background:#0a2a5aaa;border:2px solid #7cf;display:flex;align-items:center;justify-content:center;font-size:12px}
 @media (pointer:coarse){#tc{display:flex}}
 #tl{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:3px;color:#cde}
@@ -60,6 +60,11 @@ canvas{display:block}
 #pz label{font-size:13px;letter-spacing:2px;color:#9cf;display:flex;flex-direction:column;gap:6px}#pz input{width:100%}
 #hm{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;opacity:0;background:linear-gradient(45deg,transparent 46%,#fff 46%,#fff 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#fff 46%,#fff 54%,transparent 54%);filter:drop-shadow(0 0 3px #f50)}
 #gr{font:inherit;margin-top:12px;padding:8px 16px;background:#0006;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer}#pdx{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#9cf;letter-spacing:2px}#pdx span{display:flex;gap:6px;justify-content:center}#pdx button{flex:1;padding:8px 4px!important;font-size:13px!important}#pz button.on{background:#fd2;color:#210}#cd2{display:flex;gap:8px;align-items:center;justify-content:center;color:#9cf}
+#th{position:fixed;right:10px;bottom:84px;width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:none}
+#thL{font-size:11px;letter-spacing:1px;color:#fd9;text-shadow:0 0 6px #000}
+#thT{position:relative;width:40px;height:min(150px,20vh);border-radius:20px;background:#0a2a5aaa;border:2px solid #7cf;touch-action:none;cursor:pointer}
+#thF{position:absolute;left:0;right:0;bottom:0;border-radius:18px;background:#7cf6;pointer-events:none}
+#thK{position:absolute;left:-8px;right:-8px;height:26px;border-radius:8px;background:#fd2;box-shadow:0 3px #a80;pointer-events:none}
 </style></head><body>
 <div id="hud">
 <div id="tl">RUMPF<span id="hs"></span><b id="hn">230</b></div><div id="mb"><span id="wv">ERRINGE DIE LUFTHOHEIT</span></div>
@@ -69,6 +74,7 @@ canvas{display:block}
 <div id="br"><span id="ms"></span><span id="sp"></span></div><div id="bn"></div><div id="wn">⚠ RAKETE! TÄUSCHKÖRPER (F)</div><div id="bs"></div><div id="hm"></div><button id="pb">❚❚</button><button id="fv">ICH</button><button id="fw">FLÜGEL</button></div>
 <div id="fl"></div><div id="pz"><div><h2>PAUSE</h2><button class="pr" id="pres">WEITER</button><label>LAUTSTÄRKE<input id="pv" name="vol" aria-label="Lautstärke" type="range" min="0" max="100"></label><div id="pdx"></div><button id="pq"></button><button id="pshd"></button><button id="pinv"></button><div id="cd2"><small>CODE</small><input id="ci" name="code" aria-label="Code" autocomplete="off" maxlength="4" inputmode="numeric" placeholder="0000" style="width:100px;text-align:center;letter-spacing:6px"><button id="co">OK</button></div><div id="cm" style="color:#fd9;min-height:18px;font-size:13px"></div><button id="pinf">UNENDLICH MÜNZEN AUS</button><button id="phg">ZURÜCK ZUM HANGAR</button></div></div>
 <div id="tc"><div id="bf">FEUER</div><div id="bm">RAKETE</div><div id="bb">TURBO</div><div id="bd">BOMBE</div><div id="bq">LOOP</div><div id="bk">FLARES</div><div id="bz" style="display:none">SPEZIAL</div></div>
+<div id="th"><span id="thL">SCHUB 50%</span><div id="thT"><u id="thF"></u><i id="thK"></i></div></div>
 <div id="ov"><h1>STORM JET</h1><small id="pi"></small><h2 id="pn"></h2><div id="pc"></div><div id="ps"></div><div id="ar"><button id="pl">‹</button><button id="pr">›</button></div>
 <p id="msg">Schieße alle feindlichen Jets ab. Wellen werden immer härter!</p>
 <p>W / Pfeil hoch: Nase hoch · S / Pfeil runter: Nase runter · A/D: Kurve · Leertaste: MG<br>X: Lenkrakete · B: Bombe · Q: Looping · F: Täuschkörper · Shift: Turbo (weicht Schüssen aus) · I: Steuerung umkehren · C: Cockpit-Ansicht (First Person) · V: Flügel schwenken (F-14) · E: Spezialwaffe (Gespenst / Phantom)<br>Touch: links wischen = steuern<br>Hangar: ziehen = Flugzeug frei drehen (dreht sich danach von selbst weiter) · Mausrad = Zoom</p>
@@ -384,6 +390,7 @@ function spawn(ty=0){const T=ET[ty],a=Math.PI/2-yaw+(R()-.5)*2.4,d=900+R()*500,e
  e.mk.className='mk';$('hud').appendChild(e.mk);scene.add(e.m);en.push(e)}
 function nextWave(){wave++;pending=true;banner('WELLE '+wave);chat('Feindkontakt! Welle '+wave);timer=setTimeout(()=>{for(const t of LV[lv].w[wave-1])spawn(t);pending=false},1800)}
 function kill(e){if(e.dead)return;e.dead=1;boom(e.m.position,e.g?(e.big?4:2.2):.5);if(e.g)for(let i=0;i<5;i++)boom(e.m.position.clone().add(V((R()-.5)*(e.big?160:50),R()*14,(R()-.5)*(e.big?160:50))),e.big?2.5:1.6,1);if(e.g)scene.remove(e.m);else wr.push({m:e.m,v:V(0,-10,0).add(V(0,0,1).applyQuaternion(e.m.quaternion).multiplyScalar(e.spd*.8)),t:1+R()});e.mk.remove();hmT=.6;if(R()<.35)drop(e.m.position);earn+=e.g?250:100;score+=e.g?(e.big?600:200):100;hull=Math.min(100,hull+6);if(++kills%2==0)missiles=Math.min(12,missiles+1);chat(['Abschuss!','Treffer, weiter so!','Einer weniger!'][kills%3])}
+function crash(w){if(state!=='play')return;if(MP&&MP.go&&MP.inv>0)return;boom(P.position,2.8);for(let i=0;i<4;i++)boom(P.position.clone().add(V((R()-.5)*14,(R()-.5)*8,(R()-.5)*14)),1.8,1);shake=1;fl=1;hull=0;die();if(state==='over')$('msg').textContent='ABGESTÜRZT ('+w+')! '+$('msg').textContent.replace('ABGESCHOSSEN! ','')}
 function hurt(d){d*=dmgK*D.d;lastHit=time;hull-=d;shake=.7;fl=.55;sfx(90,.2,'sawtooth',.1,-40);if(hull<=0&&state==='play')die()}
 function die(){state='over';boom(P.position,2.6);P.visible=false;if(score>hi){hi=score;try{localStorage.setItem('sj_hi'+hiLv,hi)}catch(e){}}$('hi').textContent=hi;
  $('msg').textContent='ABGESCHOSSEN! Punkte: '+score+' · Welle '+wave;$('msg').textContent+=' · +'+gain(score)+' Münzen';sel(selP);$('go').textContent='NOCHMAL';$('ov').style.display='flex'}
@@ -493,9 +500,11 @@ function update(dt){
  const x=clamp((k('KeyD','ArrowRight')?1:0)-(k('KeyA','ArrowLeft')?1:0)+st.x,-1,1),y=clamp((k('KeyS','ArrowDown')?1:0)-(k('KeyW','ArrowUp')?1:0)+st.y,-1,1)*inv;
  yaw-=x*1.1*tK*WM[1]*dt;roll+=(x*.95-roll)*Math.min(1,4*dt);if(loopP>=0){loopP+=dt/1.7;up=u0+loopP*6.283;if(loopP>=1){loopP=-1;up=u0}}else up=clamp(up+y*1.3*tK*WM[1]*dt-(y?0:up*.5*dt),-1.15,1.15);
  const boost=(k('ShiftLeft','ShiftRight')||K.boost)&&energy>0;energy=clamp(energy+(boost?-35:12)*dt,0,100);if((boost||Math.abs(up)>.3))for(const sx of[-1,1])fx(P.position.clone().add(V(sx*6,0,-5).applyQuaternion(P.quaternion)),V(),.9,1.1,ctM);
- spd+=((boost?240*sK:140*sK)*WM[0]-spd)*Math.min(1,2*dt);
+ spd+=((boost?240*sK:(70+(window.THR===undefined?.5:window.THR)*140)*sK)*WM[0]-spd)*Math.min(1,2*dt);
  P.rotation.set(-up,yaw,roll);const fwd=V(0,0,1).applyQuaternion(P.quaternion);P.position.addScaledVector(fwd,spd*dt);
- if(P.position.y<8){P.position.y=8;up=Math.max(up,.35);hurt(4*dt*10)}for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=P.position.x-o.position.x,lz=P.position.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2){const h=u.hf(lx,lz)+6;if(P.position.y<h){P.position.y=h;up=Math.max(up,.35);hurt(4*dt*10)}}}if(P.position.y>1100){P.position.y=1100;up=Math.min(up,0)}
+ if(P.position.y<6)crash('Meer');for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=P.position.x-o.position.x,lz=P.position.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2){const h=u.hf(lx,lz)+4;if(P.position.y<h)crash('Insel')}}
+ for(const e of en){if(e.dead)continue;if(e.g){const q=e.m.worldToLocal(P.position.clone());if(e.big){if((q.x>-24&&q.x<32&&Math.abs(q.z)<130&&q.y<14.5)||(q.x>-19&&q.x<-7&&q.z>-28&&q.z<0&&q.y<50))crash('Flugzeugträger')}else if(Math.hypot(q.x,q.z)<34&&q.y<26)crash('Basis')}else if(e.m.position.distanceToSquared(P.position)<49){e.hp=0;kill(e);crash('Kollision')}}
+ if(P.position.y>1100){P.position.y=1100;up=Math.min(up,0)}
  P.glow.scale.set(1,1,(boost?3.5:2)*(.8+R()*.4));if(boost&&R()<.7)puff(P.position.clone().addScaledVector(fwd,-9));
  if(time-lastHit>3)hull=Math.min(100,hull+6*dt);if(hull<35&&R()<.5)puff(P.position.clone().add(V(0,0,-6).applyQuaternion(P.quaternion)));mT+=dt;if(mT>12){mT=0;missiles=Math.min(12,missiles+1);flares=Math.min(8,flares+1)}
  loopCd-=dt;spCd=Math.max(0,spCd-dt);gunCd-=dt;if((k('Space')||K.fire)&&gunCd<=0){gunCd=.075;shoot(P,true,750);sfx(320,.07,'square',.025,-150)}
@@ -1236,5 +1245,43 @@ $('pq').onclick=()=>setQ(((window.UL?3:Q)+1)%4);
 try{if(localStorage.getItem('sj_ul')==='1')setQ(3)}catch(e){}
 })();
 
+</script>
+<script>
+/* ===== EFFEKTE+ : Explosionen, Kondensstreifen, Schadensrauch, Wasser-Spritzer ===== */
+(function(){
+const X=[],sp=new THREE.SphereGeometry(1,10,8),bx=new THREE.BoxGeometry(.5,.25,.8),
+am=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false}),
+dm=new THREE.MeshBasicMaterial({color:0x2a2724,transparent:true,opacity:.6}),
+wh=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,depthWrite:false}),
+dk=new THREE.MeshBasicMaterial({color:0x303236,transparent:true});
+function mk(g,mt,p,s,l,o,v,gr){const m=new THREE.Mesh(g,mt.clone());m.position.copy(p);m.scale.setScalar(s*.2);scene.add(m);X.push({m,s,l,l0:l,o,v,g:gr})}
+function big(p,s){if(s<1.5)return;const n=window.UL?7:4;
+ mk(sp,am(0xfff2c0,1),p,s*30,.28,1);mk(sp,am(0xff7a18,.9),p,s*22,.8,.9);
+ for(let i=0;i<n;i++)mk(sp,am(i%2?0xff9a30:0xff5a10,.8),p.clone().add(V((R()-.5)*s*14,R()*s*8,(R()-.5)*s*14)),s*(9+R()*9),.7+R()*.6,.8);
+ mk(sp,dm,p.clone().add(V(0,s*6,0)),s*20,2.6,.55,V(0,6,0));mk(sp,wh,p,s*55,.5,.25);
+ for(let i=0;i<(window.UL?18:9);i++)mk(bx,dk,p,s*(.8+R()),1.8+R(),1,V((R()-.5)*120,R()*90,(R()-.5)*120),90)}
+function splash(p){for(let i=0;i<26;i++)fx(p,V((R()-.5)*50,30+R()*60,(R()-.5)*50),1+R(),3+R()*4,wh);mk(sp,wh,V(p.x,3.6,p.z),40,.9,.3)}
+const _b=boom;boom=function(p,s=1,q){_b(p,s,q);if(!q)big(p,s)};
+const _c=crash;crash=function(w){const y=P.position.y,was=state;_c(w);if(was==='play'&&w==='Meer'&&y<7&&(state==='over'||P.position.y>20))splash(P.position)};
+let t0=performance.now(),fr=0;
+(function L(t){requestAnimationFrame(L);const dt=Math.min(.1,(t-t0)/1000);t0=t;fr++;
+ for(let i=X.length-1;i>=0;i--){const e=X[i];e.l-=dt;if(e.l<=0){scene.remove(e.m);e.m.material.dispose();X.splice(i,1);continue}
+  const k=1-e.l/e.l0;if(e.v){e.m.position.addScaledVector(e.v,dt);if(e.g){e.v.y-=e.g*dt;e.m.rotation.x+=5*dt;e.m.rotation.z+=3*dt}}
+  e.m.scale.setScalar(e.g?e.s:e.s*(.2+.8*Math.sqrt(k)));e.m.material.opacity=e.o*(1-k)}
+ if(state!=='play'||!P.visible||window.QL<2||fr%2)return;
+ if(spd>170&&(Math.abs(up)>.22||Math.abs(roll)>.55))for(const s of[-1,1])fx(P.position.clone().add(V(s*5,0,-5).applyQuaternion(P.quaternion)),V(),.9,1.2,wh);
+ if(hull<45)fx(P.position.clone().add(V(0,0,-7).applyQuaternion(P.quaternion)),V(R()-.5,R()*.5,R()-.5).multiplyScalar(8),1.1,hull<22?3.4:2.4,hull<22&&R()<.5?pm[0]:smk);
+ if(window.UL&&fr%4==0)for(const e of en)if(!e.g&&!e.dead&&e.m.position.distanceToSquared(P.position)<1440000)fx(e.m.position.clone().add(V(0,0,-6).applyQuaternion(e.m.quaternion)),V(),.8,1,wh)
+})(t0);
+})();
+</script>
+<script>
+/* ===== SCHUBHEBEL ===== */
+(function(){window.THR=.5;const T=document.getElementById('thT'),F=document.getElementById('thF'),K=document.getElementById('thK'),L=document.getElementById('thL');
+function show(){const p=Math.round(window.THR*100);F.style.height=p+'%';K.style.bottom='calc('+p+'% - 13px)';L.textContent='SCHUB '+p+'%'}
+function set(e){const r=T.getBoundingClientRect();window.THR=Math.max(0,Math.min(1,1-(e.clientY-r.top)/r.height));show()}
+T.onpointerdown=e=>{e.preventDefault();e.stopPropagation();T.setPointerCapture(e.pointerId);set(e)};
+T.onpointermove=e=>{if(T.hasPointerCapture(e.pointerId)){e.preventDefault();set(e)}};
+show()})();
 </script>
 </body></html>
