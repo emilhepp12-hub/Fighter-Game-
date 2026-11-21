@@ -1347,4 +1347,51 @@ T.onpointerdown=e=>{e.preventDefault();e.stopPropagation();T.setPointerCapture(e
 T.onpointermove=e=>{if(T.hasPointerCapture(e.pointerId)){e.preventDefault();set(e)}};
 show()})();
 </script>
+<script>
+/* ===== ULTRA: Sidewinder-Rakete (models/rocket.glb) + neue Bunker (models/bunker.glb) + FPS-Feinschliff ===== */
+(function(){
+/* --- FPS: unnötige Style-/Text-Schreibzugriffe weglassen (gleicher Wert = kein Neuberechnen der Seite) --- */
+try{['display','opacity','visibility'].forEach(k=>{const d=Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype,k);
+ if(d&&d.set&&d.get)Object.defineProperty(CSSStyleDeclaration.prototype,k,{configurable:true,enumerable:d.enumerable,get:d.get,set(v){if(String(v)!==d.get.call(this))d.set.call(this,v)}})});
+ const t=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
+ if(t&&t.set)Object.defineProperty(Node.prototype,'textContent',{configurable:true,enumerable:t.enumerable,get:t.get,set(v){if(this.nodeType===1&&this.childNodes.length===1&&this.firstChild.nodeType===3){if(this.firstChild.data!==String(v))this.firstChild.data=String(v)}else t.set.call(this,v)}})}catch(e){console.warn('fps-patch',e)}
+function lib(cb,n){if(THREE.GLTFLoader)return cb();if((n|0)<120)setTimeout(()=>lib(cb,(n|0)+1),500)}
+function prep(sc,rough){const an=Math.min(8,(typeof ren!=='undefined'&&ren.capabilities&&ren.capabilities.getMaxAnisotropy)?ren.capabilities.getMaxAnisotropy():4);
+ sc.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;o.matrixAutoUpdate=false;o.updateMatrix();
+  const ms=Array.isArray(o.material)?o.material:[o.material];
+  ms.forEach(m=>{if(!m||(m.userData&&m.userData.cdone))return;m.userData=m.userData||{};m.userData.cdone=1;m.userData.glb=1;
+   if(m.map){m.map.encoding=THREE.LinearEncoding;m.map.anisotropy=an;m.map.needsUpdate=true}
+   if(rough){m.color.setRGB(1,1,1);m.roughness=1;m.metalness=0;m.envMapIntensity=.6}else if(m.metalness>.5)m.metalness=.5
+   m.needsUpdate=true})})}
+/* --- Rakete --- */
+let ROCK=null,rl=false;const HID=new THREE.MeshBasicMaterial({visible:false}),
+ fl=new THREE.Mesh(new THREE.SphereGeometry(.38,8,6).scale(1,1,3.2),new THREE.MeshBasicMaterial({color:0xffa23a,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+function loadRock(){if(ROCK||rl||!window.UL)return;rl=true;lib(()=>new THREE.GLTFLoader().load('models/rocket.glb?v=1',g=>{try{prep(g.scene,false);g.scene.traverse(o=>{if(o.isMesh&&o.material){o.material.envMapIntensity=1.2}});ROCK=g.scene}catch(e){console.warn('Rakete',e)}rl=false},null,e=>{console.warn('Rakete nicht ladbar',e);rl=false}))}
+function dress(m){m._r=1;if(!window.UL||!ROCK)return;const r=ROCK.clone(true);m.m.add(r);const f=fl.clone();f.position.set(0,0,-2.5);m.m.add(f);m.m.material=HID;m.m.castShadow=false}
+/* --- Bombe (GBU-12) --- */
+let BOMB=null,bml=false;
+function loadBomb(){if(BOMB||bml||!window.UL)return;bml=true;lib(()=>new THREE.GLTFLoader().load('models/bomb.glb?v=1',g=>{try{prep(g.scene,false);g.scene.traverse(o=>{if(o.isMesh&&o.material)o.material.envMapIntensity=1.2});BOMB=g.scene}catch(e){console.warn('Bombe',e)}bml=false},null,e=>{console.warn('Bombe nicht ladbar',e);bml=false}))}
+function dressB(b){b._r=1;if(!window.UL||!BOMB)return;const r=BOMB.clone(true);if(P.a10)r.scale.setScalar(.6);b.m.add(r);b.m.material=HID;b.m.castShadow=false}
+/* --- Bunker --- */
+const REG=[];let BUN=null,LOD=null,bl=false;const K=2.5,Y0=4.2;
+function loadBun(){if((BUN&&LOD)||bl||!window.UL||!REG.length)return;bl=true;let n=2;const fin=()=>{if(--n<=0)bl=false};
+ lib(()=>{const L=new THREE.GLTFLoader();
+  L.load('models/bunker.glb?v=3',g=>{try{prep(g.scene,true);g.scene.traverse(o=>{if(o.isMesh)o.castShadow=false});BUN=g.scene;applyB()}catch(e){console.warn('Bunker',e)}fin()},null,e=>{console.warn('Bunker nicht ladbar',e);fin()});
+  L.load('models/bunker_lod.glb?v=1',g=>{try{prep(g.scene,true);LOD=g.scene;applyB()}catch(e){console.warn('Bunker-LOD',e)}fin()},null,e=>{console.warn('Bunker-LOD nicht ladbar',e);fin()})})}
+function attachB(r,S,key){const m=S.clone(true);m.scale.setScalar(K);m.position.y=Y0;m.updateMatrix();r.g.add(m);r[key]=m}
+function applyB(){for(let i=REG.length-1;i>=0;i--){const r=REG[i];if(!r.g.parent){REG.splice(i,1);continue}
+ const on=!!window.UL&&!!(BUN||LOD);if(on&&BUN&&!r.mdl)attachB(r,BUN,'mdl');if(on&&LOD&&!r.lod)attachB(r,LOD,'lod');
+ r.prim.forEach(o=>{o.visible=!on});r.pend=1;if(!on){if(r.mdl)r.mdl.visible=false;if(r.lod)r.lod.visible=false}}}
+function lodB(){for(const r of REG){if(!window.UL||!(r.mdl||r.lod))continue;const d=r.g.position.distanceToSquared(P.position),far=d>9e6,near=d<4.9e5;
+ if(r.mdl)r.mdl.visible=!far&&(near||!r.lod);if(r.lod)r.lod.visible=!far&&!(near&&r.mdl)}}
+const _gr=ground;ground=function(kind,x,z){_gr(kind,x,z);if(kind!=='b')return;const e=en[en.length-1];if(!e||e.big)return;
+ const g=e.m,c=g.children;REG.push({g,prim:[c[0]].concat(c.slice(3))});applyB();loadBun()};
+const _sq=setQ;setQ=function(q){_sq(q);loadRock();loadBomb();loadBun();applyB()};
+loadRock();loadBomb();
+/* eigener Mini-Takt: neue Raketen einkleiden, weit entfernte Bunker ausblenden */
+let f=0;(function tick(){requestAnimationFrame(tick);f++;
+ try{for(let i=0;i<mis.length;i++)if(!mis[i]._r)dress(mis[i]);
+  if(f%8===0&&typeof P!=='undefined')lodB();for(let i=0;i<bb.length;i++)if(!bb[i]._r)dressB(bb[i])}catch(e){}})();
+})();
+</script>
 </body></html>
