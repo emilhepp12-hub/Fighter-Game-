@@ -1,8 +1,9 @@
 {
   "models": {
-    "f14": { "file": "f14.glb?v=2", "rotY": -90, "length": 17, "ultraOnly": true },
-    "su57": { "file": "su57.glb", "rotY": -90, "length": 18, "ultraOnly": true },
-    "sr71": { "file": "sr71.glb", "rotY": 0, "length": 29, "ultraOnly": true },
-    "f104": { "file": "f104.glb?v=2", "rotY": 0, "length": 22, "ultraOnly": true }
+    "f14": {"file": "f14.glb?v=2", "rotY": -90, "length": 17, "ultraOnly": true},
+    "su57": {"file": "su57.glb", "rotY": -90, "length": 18, "ultraOnly": true},
+    "sr71": {"file": "sr71.glb", "rotY": 0, "length": 29, "ultraOnly": true},
+    "f104": {"file": "f104.glb?v=2", "rotY": 0, "length": 22, "ultraOnly": true},
+    "f35": {"file": "f35.glb", "rotY": -90, "length": 16.5, "ultraOnly": true, "drop": "landingOn"}
   }
 }
