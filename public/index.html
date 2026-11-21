@@ -504,7 +504,7 @@ function update(dt){
  spd+=((boost?240*sK:(70+(window.THR===undefined?.5:window.THR)*140)*sK)*WM[0]-spd)*Math.min(1,2*dt);
  P.rotation.set(-up,yaw,roll);const fwd=V(0,0,1).applyQuaternion(P.quaternion);P.position.addScaledVector(fwd,spd*dt);
  if(P.position.y<6)crash('Meer');for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=P.position.x-o.position.x,lz=P.position.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2){const h=u.hf(lx,lz)+4;if(P.position.y<h)crash('Insel')}}
- for(const e of en){if(e.dead)continue;if(e.g){const q=e.m.worldToLocal(P.position.clone());if(e.big){if((q.x>-24&&q.x<32&&Math.abs(q.z)<130&&q.y<14.5)||(q.x>-19&&q.x<-7&&q.z>-28&&q.z<0&&q.y<50))crash('Flugzeugträger')}else if(Math.hypot(q.x,q.z)<34&&q.y<26)crash('Basis')}else if(e.m.position.distanceToSquared(P.position)<49){e.hp=0;kill(e);crash('Kollision')}}
+ for(const e of en){if(e.dead)continue;if(e.g){const q=e.m.worldToLocal(P.position.clone());if(e.big){if(e.m.userData.hit?e.m.userData.hit(q):((q.x>-24&&q.x<32&&Math.abs(q.z)<130&&q.y<14.5)||(q.x>-19&&q.x<-7&&q.z>-28&&q.z<0&&q.y<50)))crash('Flugzeugträger')}else if(Math.hypot(q.x,q.z)<34&&q.y<26)crash('Basis')}else if(e.m.position.distanceToSquared(P.position)<49){e.hp=0;kill(e);crash('Kollision')}}
  if(P.position.y>1100){P.position.y=1100;up=Math.min(up,0)}
  P.glow.scale.set(1,1,(boost?3.5:2)*(.8+R()*.4));if(boost&&R()<.7)puff(P.position.clone().addScaledVector(fwd,-9));
  if(time-lastHit>3)hull=Math.min(100,hull+6*dt);if(hull<35&&R()<.5)puff(P.position.clone().add(V(0,0,-6).applyQuaternion(P.quaternion)));mT+=dt;if(mT>12){mT=0;missiles=Math.min(12,missiles+1);flares=Math.min(8,flares+1)}
@@ -1071,6 +1071,7 @@ function setMat(mt,an){if(!mt)return;mt.userData=mt.userData||{};mt.userData.glb
 function prep(id,sc,m){
  const an=Math.min(16,(typeof ren!=='undefined'&&ren.capabilities&&ren.capabilities.getMaxAnisotropy)?ren.capabilities.getMaxAnisotropy():8);
  const hold=new THREE.Group(),inner=sc;inner.rotation.y=(m.rotY||0)*Math.PI/180;
+ if(m.drop){const rx=new RegExp(m.drop,'i'),rm=[];sc.traverse(o=>{if(rx.test(o.name))rm.push(o)});rm.forEach(o=>{if(o.parent)o.parent.remove(o)})}
  sc.traverse(o=>{if(/gearOn/i.test(o.name))o.visible=false;
   if(o.isMesh){const mts=Array.isArray(o.material)?o.material:[o.material];o.castShadow=!mts.some(x=>x&&x.transparent);o.receiveShadow=true;mts.forEach(x=>setMat(x,an))}});
  hold.add(inner);hold.updateMatrixWorld(true);
@@ -1087,6 +1088,7 @@ function loadList(ids){
  })()}
 function pending(){if(!ready)return;const ids=Object.keys(man).filter(id=>!MD[id]&&(!man[id].ultraOnly||window.UL));if(ids.length)loadList(ids)}
 window.SJ_MODELS=pending;
+window.SJ_ULJET=id=>!!(man&&man[id]&&man[id].ultraOnly);
 fetch('models/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(j=>{
  if(!j||!j.models){msg('manifest.json nicht lesbar');return}man=j.models;if(!Object.keys(man).length)return;
  loadLib(0,()=>{if(!THREE.GLTFLoader){msg('Modell-Lader (GLTFLoader) konnte nicht geladen werden');return}GL=new THREE.GLTFLoader();ready=true;pending()})
@@ -1183,16 +1185,16 @@ function box(g,w,h,d,c,x,y,z,r,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w
 function build(team){const g=new THREE.Group();
  box(g,46,14,330,0x4b5560,0,5,0,.8,.3);box(g,58,1.4,344,0x2b2f35,0,12.7,0);
  box(g,2,.3,300,0xeeeeee,0,13.5,0);box(g,2,.3,300,0xeeeeee,-14,13.5,0);
- box(g,24,.3,26,team,0,13.6,-120);box(g,24,.3,26,team,0,13.6,120);
- box(g,9,24,34,0x59636d,22,25,40);box(g,12,2,20,0x3a424a,22,38,40);box(g,.8,26,.8,0x888888,22,52,40);box(g,.5,6,10,team,22,62,44);
+ const tm1=box(g,24,.3,26,team,0,13.6,-120),tm2=box(g,24,.3,26,team,0,13.6,120);
+ box(g,9,24,34,0x59636d,22,25,40);box(g,12,2,20,0x3a424a,22,38,40);box(g,.8,26,.8,0x888888,22,52,40);g.userData.tm=[tm1,tm2,box(g,.5,6,10,team,22,62,44)];
  for(let i=0;i<4;i++)box(g,3,2,3,0x7a828a,-26,14.5,-100+i*60);
  return g}
 function bar(h){const n=Math.max(0,Math.min(10,Math.ceil(h/CMAX*10)));return '█'.repeat(n)+'░'.repeat(10-n)+' '+Math.max(0,Math.round(h/CMAX*100))+'%'}
 function mk(t,col){const d=document.createElement('div');d.style.cssText='position:absolute;border:2px solid '+col+';color:'+col+';font:700 11px monospace;padding:2px 4px;transform:translate(-50%,-130%);display:none';d.textContent=t;$('hud').appendChild(d);return d}
 function clean(){for(const o of[own,foe]){if(o)scene.remove(o)}own=foe=null;for(const d of[mO,mF,hb]){if(d)d.remove()}mO=mF=hb=null}
 function init(){clean();const a=CP(MP.host),b=CP(!MP.host);
- own=build(0x2d7dff);own.position.set(a.x,0,a.z);scene.add(own);
- foe=build(0xff3b3b);foe.position.set(b.x,0,b.z);scene.add(foe);
+ own=build(0x2d7dff);own.position.set(a.x,0,a.z);scene.add(own);cskin(own);
+ foe=build(0xff3b3b);foe.position.set(b.x,0,b.z);scene.add(foe);cskin(foe);
  MP.ch=CMAX;MP.fh=CMAX;MP.cd=0;lastSent=-1;
  hb=document.createElement('div');hb.style.cssText='position:absolute;top:74px;left:50%;transform:translateX(-50%);font:700 12px monospace;color:#fff;text-shadow:0 0 4px #000;text-align:center;pointer-events:none;white-space:pre';$('hud').appendChild(hb);
  mO=mk('DEIN TRÄGER','#4af');mF=mk('GEGNER-TRÄGER','#f55');
@@ -1205,12 +1207,16 @@ const _od=onD;onD=function(d){
  if(d&&d.t==='ch'){if(MP)MP.fh=+d.h||0;return}
  if(d&&d.t==='cx'){if(MP&&MP.cr&&MP.go&&state==='play'){state='over';if(foe)boom(foe.position.clone().add(V(0,10,0)),4);$('msg').textContent='GEGNERISCHER TRÄGER VERSENKT – GEWONNEN!';$('go').textContent='NOCHMAL';$('ov').style.display='flex'}return}
  _od(d)};
-function inBox(p,c){return Math.abs(p.x-c.x)<28&&Math.abs(p.z-c.z)<175&&p.y<22&&p.y>-6}
+function inBox(p,c,g){const h=g&&g.userData.hit;if(h)return h({x:p.x-c.x,y:p.y-c.y,z:p.z-c.z});return Math.abs(p.x-c.x)<28&&Math.abs(p.z-c.z)<175&&p.y<22&&p.y>-6}
+/* Ultra: neues Träger-Modell (Skalierung 1.34 -> ca. 330 lang wie der alte Online-Träger) */
+function cskin(g){const sk=window.SJ_CSKIN,t=g.userData.tm;if(!sk||!t)return;const k=1.34;
+ sk(g,{k,keep:t,after:on=>{if(on){t[0].scale.x=t[1].scale.x=.5;t[0].position.set(0,12.9*k+.25,-100*k);t[1].position.set(0,12.9*k+.25,100*k);t[2].position.set(-12*k,40.4*k+3,3*k)}
+  else{t[0].scale.x=t[1].scale.x=1;t[0].position.set(0,13.6,-120);t[1].position.set(0,13.6,120);t[2].position.set(22,62,44)}}})}
 (function tick(){requestAnimationFrame(tick);
  if(!MP||!MP.cr||!own){return}
  if(state==='play'&&!MP.cd){const c=own.position;
-  for(const b of bul)if(!b.own&&b.l>0&&inBox(b.m.position,c)){b.l=0;boom(b.m.position,.15,1);dmg(6)}
-  for(const m of em)if(m.st&&m.l>0&&inBox(m.m.position,c)){m.l=0;boom(m.m.position,1.6);dmg(120)}}
+  for(const b of bul)if(!b.own&&b.l>0&&inBox(b.m.position,c,own)){b.l=0;boom(b.m.position,.15,1);dmg(6)}
+  for(const m of em)if(m.st&&m.l>0&&inBox(m.m.position,c,own)){m.l=0;boom(m.m.position,1.6);dmg(120)}}
  const t=performance.now();
  if(MP.c&&MP.c.open&&(MP.ch!==lastSent||t-lastSend>1000)&&t-lastSend>150){MP.c.send({t:'ch',h:Math.round(MP.ch)});lastSent=MP.ch;lastSend=t}
  const show=state==='play';
@@ -1258,12 +1264,50 @@ setQ=function(q){const ul=q===3;window.UL=ul?1:0;_sq(ul?2:q);
  }else{if(v)v.style.background=VG0;gr.style.display='none'}
  fogUp(ul);
  if(window.SJ_MODELS)window.SJ_MODELS();
- try{if(PL[selP]&&PL[selP].id==='f14'&&state!=='over'){const o=P.quaternion.clone();sel(selP);P.quaternion.copy(o)}}catch(e){}
+ try{if(PL[selP]&&window.SJ_ULJET&&window.SJ_ULJET(PL[selP].id)&&state!=='over'){const o=P.quaternion.clone();sel(selP);P.quaternion.copy(o)}}catch(e){}
 };
 $('pq').onclick=()=>setQ(((window.UL?3:Q)+1)%4);
 try{if(localStorage.getItem('sj_ul')==='1')setQ(3)}catch(e){}
 })();
 
+</script>
+<script>
+/* ===== ULTRA: Flugzeugträger "Oswald Boelcke" (models/carrier.glb) statt der gebauten Träger ===== */
+/* Die Hitbox kommt aus einer Höhenkarte, die im Modell steckt (Knoten "carrier" -> extras.hit):
+   Raster aus Zellen mit der Oberkantenhöhe (Deck, Insel, Aufbauten). Treffer = Flugzeug tiefer als Oberkante + 1.8. */
+(function(){
+const REG=[];let SRC=null,HIT=null,loading=false,tries=0;
+const FILE='models/carrier.glb?v=1';
+function mkHit(H,k){const cs=H.cs*k,x0=H.x0*k,z0=H.z0*k,nx=H.nx,nz=H.nz,h=H.h;
+ return q=>{const ix=Math.floor((q.x-x0)/cs),iz=Math.floor((q.z-z0)/cs);if(ix<0||iz<0||ix>=nx||iz>=nz)return false;const v=h[iz*nx+ix];return v>0&&q.y<v*k+1.8}}
+function prepSrc(sc){const an=Math.min(16,(typeof ren!=='undefined'&&ren.capabilities&&ren.capabilities.getMaxAnisotropy)?ren.capabilities.getMaxAnisotropy():8);
+ sc.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;
+  const mts=Array.isArray(o.material)?o.material:[o.material];
+  mts.forEach(m=>{if(!m)return;m.userData=m.userData||{};if(m.userData.cdone)return;m.userData.glb=1;m.userData.cdone=1;
+   if(m.map){m.map.encoding=THREE.LinearEncoding;m.map.anisotropy=an;m.map.needsUpdate=true}
+   m.envMapIntensity=1.6;if(m.transparent)m.depthWrite=false;m.needsUpdate=true})})}
+function attach(r){if(r.mdl||!SRC)return;const m=SRC.clone(true);m.scale.setScalar(r.k);r.g.add(m);r.mdl=m;r.hit=mkHit(HIT,r.k)}
+function apply(){
+ for(let i=REG.length-1;i>=0;i--){const r=REG[i];if(!r.g.parent){REG.splice(i,1);continue}
+  const on=!!window.UL&&!!SRC;if(on&&!r.mdl)attach(r);
+  r.prim.forEach(o=>{o.visible=!on});if(r.keep)r.keep.forEach(o=>{o.visible=true});
+  if(r.mdl)r.mdl.visible=on;r.g.userData.hit=on&&r.hit?r.hit:null;if(r.after)r.after(on)}}
+function load(){
+ if(SRC||loading||!window.UL)return;
+ if(!THREE.GLTFLoader){if(tries++<120)setTimeout(load,500);return}   /* Lader kommt aus dem Modelle-Block */
+ loading=true;
+ new THREE.GLTFLoader().load(FILE,g=>{try{const car=g.scene.getObjectByName('carrier')||g.scene;HIT=car.userData.hit;car.userData={};
+   if(!HIT)throw new Error('Hitbox-Daten fehlen');prepSrc(car);SRC=car;apply()}catch(e){console.warn('Träger-Modell',e)}loading=false},
+  null,e=>{console.warn('Träger-Modell nicht ladbar:',FILE,e);loading=false})}
+/* Einzelspieler: jeder neu gebaute Gegner-Träger wird registriert */
+const _gr=ground;ground=function(kind,x,z){_gr(kind,x,z);if(kind!=='c')return;const e=en[en.length-1];if(!e||!e.big)return;
+ const g=e.m;REG.push({g,k:1,prim:g.children.slice(0,-1)});   /* letztes Kind = Kielwasser, bleibt sichtbar */
+ apply();load()};
+/* Online-Träger-Schlacht (aus dem Online-Block): Gruppe + Skalierung + Teamfarben-Teile */
+window.SJ_CSKIN=function(g,o){REG.push({g,k:o.k||1,prim:g.children.slice(),keep:o.keep,after:o.after});apply();load()};
+const _sq=setQ;setQ=function(q){_sq(q);load();apply()};
+load();apply();
+})();
 </script>
 <script>
 /* ===== EFFEKTE+ : Explosionen, Kondensstreifen, Schadensrauch, Wasser-Spritzer ===== */
