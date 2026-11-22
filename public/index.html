@@ -78,7 +78,7 @@ canvas{display:block}
 <div id="th"><span id="thL">SCHUB 50%</span><div id="thT"><u id="thF"></u><i id="thK"></i></div></div>
 <div id="ov"><h1>STORM JET</h1><small id="pi"></small><h2 id="pn"></h2><div id="pc"></div><div id="ps"></div><div id="ar"><button id="pl">‹</button><button id="pr">›</button></div>
 <p id="msg">Schieße alle feindlichen Jets ab. Wellen werden immer härter!</p>
-<p>W / Pfeil hoch: Nase hoch · S / Pfeil runter: Nase runter · A/D: Kurve · Leertaste: MG<br>X: Lenkrakete · B: Bombe · Q: Looping · F: Täuschkörper · Shift: Turbo (weicht Schüssen aus) · I: Steuerung umkehren · C: Cockpit-Ansicht (First Person) · V: Flügel schwenken (F-14) · G: Fahrwerk ein-/ausfahren (F-104) · E: Spezialwaffe (Gespenst / Phantom)<br>Touch: links wischen = steuern<br>Hangar: ziehen = Flugzeug frei drehen (dreht sich danach von selbst weiter) · Mausrad = Zoom</p>
+<p>W / Pfeil hoch: Nase hoch · S / Pfeil runter: Nase runter · A/D: Kurve · Leertaste: MG<br>X: Lenkrakete · B: Bombe · Q: Looping · F: Täuschkörper · Shift: Turbo (weicht Schüssen aus) · I: Steuerung umkehren · C: Cockpit-Ansicht (First Person) · V: Flügel schwenken (F-14) · G: Fahrwerk ein-/ausfahren (F-104 · SU-57) · E: Spezialwaffe (Gespenst / Phantom)<br>Touch: links wischen = steuern<br>Hangar: ziehen = Flugzeug frei drehen (dreht sich danach von selbst weiter) · Mausrad = Zoom</p>
 <div id="up"></div><div id="lv"></div><div id="df"></div><button id="gr">⚙ EINSTELLUNGEN</button><button id="go">START</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -1127,12 +1127,13 @@ mkJet2=function(id,c,ac,sc){const g=_prev(id,c,ac,sc),t=MD[id];if(!t)return g;
  /* Schwenkflügel (F-14) und Fahrwerk (F-104) aus dem Modell finden */
  const wp=[],gp=[];k.traverse(o=>{const u=o.userData;if(u&&u.wing)wp.push(o);else if(u&&u.gear)gp.push(o)});
  if(wp.length&&g.f14)g.f14.gl=wp;
- if(gp.length){g.gear={p:gp,k:1};gearPose(g.gear)}
+ if(gp.length){const off=[],lt=[];k.traverse(o=>{if(/landingOff/i.test(o.name))off.push(o);else if(/landingOnLight|landingLight/i.test(o.name))lt.push(o)});g.gear={p:gp,k:1,off:off,lt:lt};gearPose(g.gear)}
  return g};
 /* Fahrwerk: k=0 ausgefahren, k=1 eingefahren (Klappen um das Gelenk, dabei schrumpfen, am Ende ausblenden) */
 const GAX=new THREE.Vector3();
 function gearPose(q){const e=q.k*q.k*(3-2*q.k);
- q.p.forEach(o=>{const u=o.userData;GAX.set(u.ax[0],u.ax[1],u.ax[2]);o.quaternion.setFromAxisAngle(GAX,u.ang*e);o.scale.setScalar(1-(1-u.sc)*e);o.visible=q.k<.99})}
+ q.p.forEach(o=>{const u=o.userData;GAX.set(u.ax[0],u.ax[1],u.ax[2]);o.quaternion.setFromAxisAngle(GAX,u.ang*e);o.scale.setScalar(1-(1-u.sc)*e);o.visible=q.k<.99});
+ if(q.off)q.off.forEach(o=>{o.visible=q.k>.7});if(q.lt)q.lt.forEach(o=>{o.visible=q.k<.3})}
 let gu=1; /* Wunsch des Spielers: 1 = eingefahren (Flug), 0 = ausgefahren */
 window.SJ_GEAR=function(){if(state==='play'&&P&&P.gear)gu=gu?0:1};
 addEventListener('keydown',e=>{if(e.code==='KeyG'&&!e.repeat&&e.target.tagName!=='INPUT')window.SJ_GEAR()});
