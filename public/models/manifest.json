@@ -27,7 +27,7 @@
   "mig21": {
    "file": "mig21.glb?v=2",
    "rotY": -90,
-   "length": 14.5,
+   "length": 17.5,
    "ultraOnly": true,
    "gearSplit": {
     "mesh": "mesh_166_mat_62_0",
