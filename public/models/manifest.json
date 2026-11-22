@@ -1,10 +1,115 @@
 {
-  "models": {
-    "f14": {"file": "f14.glb?v=2", "rotY": -90, "length": 17, "ultraOnly": true},
-    "su57": {"file": "su57.glb", "rotY": -90, "length": 18, "ultraOnly": true},
-    "sr71": {"file": "sr71.glb", "rotY": 0, "length": 29, "ultraOnly": true},
-    "f104": {"file": "f104.glb?v=2", "rotY": 0, "length": 22, "ultraOnly": true},
-    "mig21": {"file": "mig21.glb?v=1", "rotY": 0, "quat": [-0.5, -0.5, -0.5, 0.5], "length": 15, "ultraOnly": true},
-    "f35": {"file": "f35.glb", "rotY": -90, "length": 16.5, "ultraOnly": true, "drop": "landingOn"}
+ "models": {
+  "f14": {
+   "file": "f14.glb?v=2",
+   "rotY": -90,
+   "length": 17,
+   "ultraOnly": true
+  },
+  "su57": {
+   "file": "su57.glb",
+   "rotY": -90,
+   "length": 18,
+   "ultraOnly": true
+  },
+  "sr71": {
+   "file": "sr71.glb",
+   "rotY": 0,
+   "length": 29,
+   "ultraOnly": true
+  },
+  "f104": {
+   "file": "f104.glb?v=2",
+   "rotY": 0,
+   "length": 22,
+   "ultraOnly": true
+  },
+  "mig21": {
+   "file": "mig21.glb?v=2",
+   "rotY": -90,
+   "length": 14.5,
+   "ultraOnly": true,
+   "gearSplit": {
+    "mesh": "mesh_166_mat_62_0",
+    "parts": [
+     {
+      "gear": "N",
+      "box": [
+       33,
+       -14.5,
+       -1.3,
+       39.8,
+       -4.0,
+       1.3
+      ],
+      "hinge": [
+       37.5,
+       -4.3,
+       0
+      ],
+      "ax": [
+       0,
+       0,
+       1
+      ],
+      "ang": 1.9,
+      "sc": 0.35
+     },
+     {
+      "gear": "L",
+      "box": [
+       -11.5,
+       -14.5,
+       10.5,
+       -2.4,
+       0,
+       17.5
+      ],
+      "hinge": [
+       -6.9,
+       -0.6,
+       14.5
+      ],
+      "ax": [
+       1,
+       0,
+       0
+      ],
+      "ang": 1.9,
+      "sc": 0.35
+     },
+     {
+      "gear": "R",
+      "box": [
+       -11.5,
+       -14.5,
+       -17.5,
+       -2.4,
+       0,
+       -10.5
+      ],
+      "hinge": [
+       -6.9,
+       -0.6,
+       -14.5
+      ],
+      "ax": [
+       1,
+       0,
+       0
+      ],
+      "ang": -1.9,
+      "sc": 0.35
+     }
+    ]
+   }
+  },
+  "f35": {
+   "file": "f35.glb",
+   "rotY": -90,
+   "length": 16.5,
+   "ultraOnly": true,
+   "drop": "landingOn"
   }
+ }
 }
