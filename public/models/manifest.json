@@ -679,9 +679,9 @@
   },
   "b2": {
    "file": "b2.glb",
-   "rotY": 90,
+   "rotY": 95.85,
    "length": 23,
-   "ctx": 2.0,
+   "ctx": 1.71,
    "ultraOnly": true,
    "gearSplit": {
     "rx": "^Object_",
