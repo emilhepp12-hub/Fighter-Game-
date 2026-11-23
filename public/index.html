@@ -502,7 +502,7 @@ function world(){dome.position.copy(P.position);sh.position.copy(P.position).add
 function scr(p){const v=p.clone().project(cam),b=v.z>1;if(b){v.x=-v.x;v.y=-v.y}return{x:v.x,y:v.y,b}}
 function update(dt){
  const x=clamp((k('KeyD','ArrowRight')?1:0)-(k('KeyA','ArrowLeft')?1:0)+st.x,-1,1),y=clamp((k('KeyS','ArrowDown')?1:0)-(k('KeyW','ArrowUp')?1:0)+st.y,-1,1)*inv;
- yaw-=x*1.1*tK*WM[1]*dt;roll+=(x*.95-roll)*Math.min(1,4*dt);if(loopP>=0){loopP+=dt/1.7;up=u0+loopP*6.283;if(loopP>=1){loopP=-1;up=u0}}else up=clamp(up+y*1.3*tK*WM[1]*dt-(y?0:up*.5*dt),-1.15,1.15);
+ yaw-=x*1.1*tK*WM[1]*dt;roll+=(x*(SJ_B2()?.3:.95)-roll)*Math.min(1,(SJ_B2()?6:4)*dt);if(loopP>=0){loopP+=dt/1.7;up=u0+loopP*6.283;if(loopP>=1){loopP=-1;up=u0}}else up=clamp(up+y*1.3*tK*WM[1]*dt-(y?0:up*.5*dt),-1.15,1.15);
  const boost=(k('ShiftLeft','ShiftRight')||K.boost)&&energy>0;energy=clamp(energy+(boost?-35:12)*dt,0,100);if((boost||Math.abs(up)>.3))for(const sx of[-1,1])fx(P.position.clone().add(V(sx*6,0,-5).applyQuaternion(P.quaternion)),V(),.9,1.1,ctM);
  spd+=((boost?240*sK:(70+(window.THR===undefined?.5:window.THR)*140)*sK)*WM[0]-spd)*Math.min(1,2*dt);
  P.rotation.set(-up,yaw,roll);const fwd=V(0,0,1).applyQuaternion(P.quaternion);P.position.addScaledVector(fwd,spd*dt);
