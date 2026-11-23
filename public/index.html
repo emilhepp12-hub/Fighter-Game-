@@ -78,7 +78,7 @@ canvas{display:block}
 <div id="th"><span id="thL">SCHUB 50%</span><div id="thT"><u id="thF"></u><i id="thK"></i></div></div>
 <div id="ov"><h1>STORM JET</h1><small id="pi"></small><h2 id="pn"></h2><div id="pc"></div><div id="ps"></div><div id="ar"><button id="pl">‹</button><button id="pr">›</button></div>
 <p id="msg">Schieße alle feindlichen Jets ab. Wellen werden immer härter!</p>
-<p>W / Pfeil hoch: Nase hoch · S / Pfeil runter: Nase runter · A/D: Kurve · Leertaste: MG<br>X: Lenkrakete · B: Bombe · Q: Looping · F: Täuschkörper · Shift: Turbo (weicht Schüssen aus) · I: Steuerung umkehren · C: Cockpit-Ansicht (First Person) · V: Flügel schwenken (F-14) · G: Fahrwerk ein-/ausfahren (F-104 · SU-57) · E: Spezialwaffe (Gespenst / Phantom)<br>Touch: links wischen = steuern<br>Hangar: ziehen = Flugzeug frei drehen (dreht sich danach von selbst weiter) · Mausrad = Zoom</p>
+<p>W / Pfeil hoch: Nase hoch · S / Pfeil runter: Nase runter · A/D: Kurve · Leertaste: MG<br>X: Lenkrakete · B: Bombe · Q: Looping · F: Täuschkörper · Shift: Turbo (weicht Schüssen aus) · I: Steuerung umkehren · C: Cockpit-Ansicht (First Person) · V: Flügel schwenken (F-14) · G: Fahrwerk ein-/ausfahren (alle Modell-Jets mit Rädern) · E: Spezialwaffe (Gespenst / Phantom)<br>Touch: links wischen = steuern<br>Hangar: ziehen = Flugzeug frei drehen (dreht sich danach von selbst weiter) · Mausrad = Zoom</p>
 <div id="up"></div><div id="lv"></div><div id="df"></div><button id="gr">⚙ EINSTELLUNGEN</button><button id="go">START</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -1069,23 +1069,27 @@ function setMat(mt,an){if(!mt)return;mt.userData=mt.userData||{};mt.userData.glb
  for(const k of['normalMap','metalnessMap','roughnessMap','aoMap']){const t=mt[k];if(t){t.anisotropy=an}}
  mt.envMapIntensity=1.5;if(mt.transparent){mt.depthWrite=false}mt.needsUpdate=true}
 function splitGear(sc,cfg){
- sc.updateMatrixWorld(true);let src=null;sc.traverse(o=>{if(o.isMesh&&o.name===cfg.mesh)src=o});if(!src)return;
- const geo=src.geometry,pos=geo.attributes.position,nor=geo.attributes.normal,uv=geo.attributes.uv,uv2=geo.attributes.uv2,ix=geo.index?geo.index.array:null,
-  M=src.matrixWorld,NM=new THREE.Matrix3().getNormalMatrix(M),flip=M.determinant()<0,n=ix?ix.length:pos.count,rest=[],B=cfg.parts.map(()=>[]),v=new THREE.Vector3();
- for(let t=0;t<n;t+=3){const T=[ix?ix[t]:t,ix?ix[t+1]:t+1,ix?ix[t+2]:t+2];let cx=0,cy=0,cz=0;
-  for(const k of T){v.fromBufferAttribute(pos,k).applyMatrix4(M);cx+=v.x;cy+=v.y;cz+=v.z}cx/=3;cy/=3;cz/=3;
-  let hit=-1;cfg.parts.forEach((q,i)=>{const b=q.box;if(hit<0&&cx>=b[0]&&cx<=b[3]&&cy>=b[1]&&cy<=b[4]&&cz>=b[2]&&cz<=b[5])hit=i});
-  if(hit<0)rest.push(T[0],T[1],T[2]);else B[hit].push(T)}
- geo.setIndex(rest);
- cfg.parts.forEach((q,i)=>{const L=B[i];if(!L.length)return;const P3=[],N3=[],U=[],U2=[],h=q.hinge;
-  L.forEach(T=>{const o=flip?[T[0],T[2],T[1]]:T;for(const k of o){v.fromBufferAttribute(pos,k).applyMatrix4(M);P3.push(v.x-h[0],v.y-h[1],v.z-h[2]);
-   if(nor){v.fromBufferAttribute(nor,k).applyMatrix3(NM).normalize();N3.push(v.x,v.y,v.z)}
-   if(uv)U.push(uv.getX(k),uv.getY(k));if(uv2)U2.push(uv2.getX(k),uv2.getY(k))}});
-  const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.Float32BufferAttribute(P3,3));
-  if(nor)g2.setAttribute('normal',new THREE.Float32BufferAttribute(N3,3));else g2.computeVertexNormals();
-  if(uv)g2.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));if(uv2)g2.setAttribute('uv2',new THREE.Float32BufferAttribute(U2,2));
-  const pv=new THREE.Object3D();pv.position.set(h[0],h[1],h[2]);pv.userData={gear:q.gear,ax:q.ax,ang:q.ang,sc:q.sc};
-  const me=new THREE.Mesh(g2,src.material);pv.add(me);sc.add(pv)})}
+ sc.updateMatrixWorld(true);
+ const rn=cfg.rx?new RegExp(cfg.rx,'i'):null,rp=cfg.pn?new RegExp(cfg.pn,'i'):null,srcs=[];
+ sc.traverse(o=>{if(!o.isMesh)return;if((cfg.mesh&&o.name===cfg.mesh)||(rn&&rn.test(o.name))||(rp&&o.parent&&rp.test(o.parent.name)))srcs.push(o)});
+ if(!srcs.length)return;
+ const pvs=cfg.parts.map(q=>{const h=q.hinge,pv=new THREE.Object3D();pv.position.set(h[0],h[1],h[2]);pv.userData={gear:q.gear,ax:q.ax,ang:q.ang,sc:q.sc};sc.add(pv);return pv}),v=new THREE.Vector3();
+ srcs.forEach(src=>{
+  const geo=src.geometry,pos=geo.attributes.position,nor=geo.attributes.normal,uv=geo.attributes.uv,uv2=geo.attributes.uv2,ix=geo.index?geo.index.array:null,
+   M=src.matrixWorld,NM=new THREE.Matrix3().getNormalMatrix(M),flip=M.determinant()<0,n=ix?ix.length:pos.count,rest=[],B=cfg.parts.map(()=>[]);
+  for(let t=0;t<n;t+=3){const T=[ix?ix[t]:t,ix?ix[t+1]:t+1,ix?ix[t+2]:t+2];let cx=0,cy=0,cz=0;
+   for(const k of T){v.fromBufferAttribute(pos,k).applyMatrix4(M);cx+=v.x;cy+=v.y;cz+=v.z}cx/=3;cy/=3;cz/=3;
+   let hit=-1;cfg.parts.forEach((q,i)=>{const b=q.box;if(hit<0&&cx>=b[0]&&cx<=b[3]&&cy>=b[1]&&cy<=b[4]&&cz>=b[2]&&cz<=b[5])hit=i});
+   if(hit<0)rest.push(T[0],T[1],T[2]);else B[hit].push(T)}
+  geo.setIndex(rest);
+  cfg.parts.forEach((q,i)=>{const L=B[i];if(!L.length)return;const P3=[],N3=[],U=[],U2=[],h=q.hinge;
+   L.forEach(T=>{const o=flip?[T[0],T[2],T[1]]:T;for(const k of o){v.fromBufferAttribute(pos,k).applyMatrix4(M);P3.push(v.x-h[0],v.y-h[1],v.z-h[2]);
+    if(nor){v.fromBufferAttribute(nor,k).applyMatrix3(NM).normalize();N3.push(v.x,v.y,v.z)}
+    if(uv)U.push(uv.getX(k),uv.getY(k));if(uv2)U2.push(uv2.getX(k),uv2.getY(k))}});
+   const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.Float32BufferAttribute(P3,3));
+   if(nor)g2.setAttribute('normal',new THREE.Float32BufferAttribute(N3,3));else g2.computeVertexNormals();
+   if(uv)g2.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));if(uv2)g2.setAttribute('uv2',new THREE.Float32BufferAttribute(U2,2));
+   const me=new THREE.Mesh(g2,src.material);me.castShadow=src.castShadow;me.receiveShadow=src.receiveShadow;pvs[i].add(me)})})}
 function prep(id,sc,m){
  if(m.gearSplit){try{splitGear(sc,m.gearSplit)}catch(e){console.warn('Fahrwerk-Split',e)}}
  const an=Math.min(16,(typeof ren!=='undefined'&&ren.capabilities&&ren.capabilities.getMaxAnisotropy)?ren.capabilities.getMaxAnisotropy():8);
