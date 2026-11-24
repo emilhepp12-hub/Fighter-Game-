@@ -1140,10 +1140,14 @@ try{ren.domElement.addEventListener('webglcontextlost',e=>e.preventDefault(),fal
 ren.domElement.addEventListener('webglcontextrestored',()=>{try{if((window.HQ||window.UL)&&typeof envUp==='function')envUp()}catch(e){}},false)}catch(e){}
 const _sa=skinApply;skinApply=function(m){if(m&&m.userData&&m.userData.glb)return;_sa(m)};
 const _prev=mkJet2;
-mkJet2=function(id,c,ac,sc){const g=_prev(id,c,ac,sc),t=MD[id];if(!t){try{if(ready&&window.UL&&man&&man[id]&&man[id].ultraOnly&&!LD[id])loadOne(id)}catch(e){}return g}
+mkJet2=function(id,c,ac,sc){return swapJet(id,_prev(id,c,ac,sc))};
+window.SJ_SWAP=swapJet;
+function swapJet(id,g){const t=MD[id];if(!t){try{if(ready&&window.UL&&man&&man[id]&&man[id].ultraOnly&&!LD[id])loadOne(id)}catch(e){}return g}
  if(man&&man[id]&&man[id].ultraOnly&&!window.UL)return g;
  g.traverse(o=>{if(o.isMesh&&!(o.material&&o.material.blending===THREE.AdditiveBlending))o.visible=false});
  const k=t.clone(true);k.scale.multiplyScalar(1/(g.scale.x||1));g.add(k);
+ /* Propeller (c130): drehen sich um ihre Nabe */
+ k.traverse(o=>{if(/^prop\d$/.test(o.name)){const d=(+o.name.slice(4))%2?.03:-.03;o.traverse(q=>{if(q.isMesh)q.onBeforeRender=function(){o.rotation.z=performance.now()*d}})}});
  /* Schwenkflügel (F-14) und Fahrwerk (F-104) aus dem Modell finden */
  const wp=[],gp=[];k.traverse(o=>{const u=o.userData;if(u&&u.wing)wp.push(o);else if(u&&u.gear)gp.push(o)});
  if(wp.length&&g.f14)g.f14.gl=wp;
@@ -1726,7 +1730,7 @@ function mkHerc(c,ac,sc){
  Bx(2.8,.05,3,a,0,-1.7,-12);Bx(3.6,.3,17,a,0,.9,-.5);
  fin0(g);if(sc)g.scale.set(sc[0],sc[1],sc[2]);return g}
 
-const _mj=mkJet2;mkJet2=function(id,c,ac,sc){if(id==='apache')return mkApache(c,ac,sc);if(id==='reaper')return mkReaper(c,ac,sc);if(id==='c130')return mkHerc(c,ac,sc);return _mj(id,c,ac,sc)};
+const _mj=mkJet2;mkJet2=function(id,c,ac,sc){const q=id==='apache'?mkApache:id==='reaper'?mkReaper:id==='c130'?mkHerc:null;if(q){const g=q(c,ac,sc);return window.SJ_SWAP?window.SJ_SWAP(id,g):g}return _mj(id,c,ac,sc)};
 const _ey=eyeFor;eyeFor=function(p){if(p.id==='apache')return V(0,1.2,3.4);if(p.id==='reaper')return V(0,.95,4.0);if(p.id==='c130')return V(0,1.2,8.2);return _ey(p)};
 PL.push(
  {id:'apache',n:'AH-64 APACHE',d:'KAMPFHUBSCHRAUBER · SCHWER GEPANZERT',c:0x4a5240,a:0x1f2327,hp:520,gun:90,mis:210,turn:105,spd:66,$:5800,pt:['Schwerer Panzerjäger mit Kanone und Raketen','Langsam, aber wendig und sehr robust']},
@@ -1757,14 +1761,14 @@ function miniIsland(Q){const hf=(x,z)=>{const l=1-Math.hypot(x,z)/Q*(1+.12*Math.
 function tgt(m,x,y,z,hp,o){o=o||{};m.position.set(x,y,z);scene.add(m);const mk=document.createElement('div');mk.className='mk gt';$('hud').appendChild(mk);
  const H=hp*D.h,e=Object.assign({g:1,big:false,m,hp:H,hp0:H,spin:null,r2:1600,rng:0,cd:1+R(),mk,dead:0},o);en.push(e);NEW.push(m);return e}
 
-function radarModel(){const g=new THREE.Group(),spin=new THREE.Group(),olive=0x4d5444;
+function radarModel(k){const g=new THREE.Group(),spin=new THREE.Group(),olive=0x4d5444;
  bx(g,5.2,1.2,15,olive,0,1.6,0);bx(g,4.6,2.6,4,olive,0,3.5,6);bx(g,4.2,1,.2,0x182026,0,4.1,8.05);
  for(const z of[-5,.5,6])for(const s of[-1,1])wheel(g,s*2.7,1.1,z);
  bx(g,4.4,3.6,8,0x6b735c,0,4.6,-3);cy(g,.5,.5,4,0x555a60,0,8.4,-3,8);
  spin.position.set(0,10.8,-3);g.add(spin);bx(spin,13,5,.6,0x9aa39a,0,0,0);bx(spin,13.4,.4,.8,0x30363a,0,2.7,0);bx(spin,.8,.8,.8,0x30363a,0,0,-.6);
  bx(g,3,2,5,olive,0,1.8,-12);for(const s of[-1,1])wheel(g,s*1.6,1.0,-12.5,.9);
  for(const s of[-1,1])for(const z of[-6.5,0])bx(g,.7,.5,.7,0x333333,s*3.2,.5,z);
- return{g,spin}}
+ return{g,spin,r:rdrReg(k,g,spin)}}
 function tankModel(col){const g=new THREE.Group();
  bx(g,4.2,1.5,8.6,col,0,1.5,0);bx(g,3.6,.6,5.6,col,0,2.5,-.3);
  for(const s of[-1,1]){bx(g,1,1.7,9.4,0x2a2d2b,s*2.4,1.05,0);for(const z of[-3.6,-1.2,1.2,3.6])cy(g,.5,.5,.3,0x444847,s*2.9,1.0,z,8).rotation.z=P2}
@@ -1798,9 +1802,29 @@ function fuelModel(){const g=new THREE.Group();
  cy(g,10.1,10.1,2.2,0xc23b3b,0,5,0,18);return g}
 function truck2(col){const g=truckModel(col);return g}
 
+/* ===== ULTRA: Funkstationen aus echten 3D-Modellen (models/radar_camp.glb = Station Camp Hero, models/radar_dish.glb = Radarschüssel) ===== */
+const RDR=[],RSRC={},RBUSY={};
+const RCFG={camp:{f:'models/radar_camp.glb?v=1',s:1,y:-.3,sh:0},dish:{f:'models/radar_dish.glb?v=1',s:9,y:-.1,sh:1}};
+function rdrReg(k,g,spin){const r={k:k||'dish',g,spin,e:null,proc:[],mdl:null,sp:null};g.traverse(o=>{if(o.isMesh)r.proc.push(o)});RDR.push(r);return r}
+function rdrLoad(k,n){if(RSRC[k]||RBUSY[k])return;if(!THREE.GLTFLoader){if((n|0)<120)setTimeout(()=>rdrLoad(k,(n|0)+1),500);return}
+ RBUSY[k]=1;new THREE.GLTFLoader().load(RCFG[k].f,g=>{try{
+  const an=Math.min(16,(ren.capabilities&&ren.capabilities.getMaxAnisotropy)?ren.capabilities.getMaxAnisotropy():8),o={};
+  g.scene.traverse(m=>{if(m.name==='base'||m.name==='top')o[m.name]=m;if(!m.isMesh)return;m.castShadow=!!RCFG[k].sh;m.receiveShadow=!!RCFG[k].sh;
+   (Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>{if(!mt)return;mt.userData=mt.userData||{};mt.userData.glb=1;
+    for(const q of['map','emissiveMap']){const t=mt[q];if(t){if(q==='map')t.encoding=THREE.LinearEncoding;t.anisotropy=an;t.needsUpdate=true}}
+    for(const q of['normalMap','metalnessMap','roughnessMap','aoMap']){const t=mt[q];if(t)t.anisotropy=an}
+    if(typeof mt.metalness==='number'&&mt.metalness>.3)mt.metalness=.3;if(mt.isMeshStandardMaterial)mt.envMapIntensity=1.5;mt.needsUpdate=true})});
+  if(o.base&&o.top)RSRC[k]=o;else console.warn('Funkstation',k,'ohne base/top')}catch(e){console.warn('Funkstation',k,e)}RBUSY[k]=0},null,e=>{console.warn('Funkstation nicht ladbar',RCFG[k].f,e);RBUSY[k]=0})}
+function rdrAttach(r,S){const C=RCFG[r.k],U=new THREE.Group(),sp=new THREE.Group();U.scale.setScalar(C.s);U.position.y=C.y;
+ U.add(S.base.clone(true));sp.add(S.top.clone(true));U.add(sp);r.g.add(U);r.proc.forEach(m=>m.visible=false);r.mdl=U;r.sp=sp;if(r.e)r.e.spin=sp}
+function rdrSync(){try{const on=!!window.UL;for(const r of RDR){
+ if(on){const S=RSRC[r.k];if(!S){rdrLoad(r.k);continue}if(!r.mdl)rdrAttach(r,S);else if(!r.mdl.visible){r.mdl.visible=true;r.proc.forEach(m=>m.visible=false);if(r.e)r.e.spin=r.sp}}
+ else if(r.mdl&&r.mdl.visible){r.mdl.visible=false;r.proc.forEach(m=>m.visible=true);if(r.e)r.e.spin=r.spin}}}catch(e){}}
+setInterval(rdrSync,700);
+
 /* Mobile Radarstation auf kleiner Insel */
-function mkRadar(x,z){const mi=miniIsland(34),rm=radarModel();rm.g.position.y=6.2;mi.add(rm.g);
- return tgt(mi,x,0,z,160,{spin:rm.spin,r2:2200,rng:0})}
+function mkRadar(x,z,i){const mi=miniIsland(34),rm=radarModel(i%2?'dish':'camp');rm.g.position.y=6.2;mi.add(rm.g);
+ const e=tgt(mi,x,0,z,160,{spin:rm.spin,r2:2200,rng:0});rm.r.e=e;return e}
 
 /* Ringstraße mit Panzerkonvoi auf einer großen Insel */
 function mkConvoy(isl,cx,cz,r,dir){const rho=r*.4,road=new THREE.Mesh(new THREE.RingGeometry(rho-5,rho+5,72).rotateX(-P2),M(0x3c3f3a));road.position.y=6.2;isl.add(road);
@@ -1830,10 +1854,10 @@ function mkGrossbasis(cx,cz){const r=520,isl=bigIsland(cx,cz,r,h=>h<1.5?0xd8c68a
  for(const x of[200,165,130])T(fuelModel(),x,230,150,{r2:2000,cz:16,cy:22});
  for(const[x,z]of[[-260,150],[230,-220]])T(samModel(0x56604a),x,z,150,{r2:1800,rng:1000,cz:16,cy:14},R()*6);
  for(const[x,z]of[[-190,260],[-190,-260]])T(aaModel(0x56604a),x,z,120,{r2:1500,rng:800,cz:14,cy:12},R()*6);
- {const rm=radarModel();rm.g.rotation.y=.8;T(rm.g,60,230,160,{spin:rm.spin,r2:2200,cz:18,cy:24})}
+ {const rm=radarModel('dish');rm.g.rotation.y=.8;rm.r.e=T(rm.g,60,230,160,{spin:rm.spin,r2:2200,cz:18,cy:24})}
  [['f16',0x7d8b99,0x2a3342],['mig29',0x6f7f8f,0x333333],['f18',0x636e7a,0xe0a030],['f16',0x7d8b99,0x2a3342]].forEach((q,i)=>{
   try{const j=mkJet2(q[0],q[1],q[2],null);if(j.glow)j.glow.visible=false;T(j,95,-75+i*55,110,{r2:1500,cz:14,cy:10},W)}catch(e){console.warn('Basisflugzeug',e)}});
- try{const h=mkHerc(0x59624d,0x2b3028,[.7,.7,.7]);h.glow.visible=false;T(h,160,150,420,{r2:2600,cz:26,cy:14},W)}catch(e){}
+ try{let h=mkHerc(0x59624d,0x2b3028,[.7,.7,.7]);h.glow.visible=false;if(window.SJ_SWAP)h=window.SJ_SWAP('c130',h);T(h,160,150,420,{r2:2600,cz:26,cy:14},W)}catch(e){}
  for(const[x,z]of[[40,-110],[60,70],[10,125]])T(truck2(0x6a6f58),x,z,50,{r2:900,cz:10,cy:10},R()*6)}
 
 /* ---------- Apache startet von Träger / Kampfschiff / Basis (sonst Luftstart) ---------- */
@@ -1850,9 +1874,9 @@ let lt2=performance.now();
 
 /* ---------- Level-Aufbau ---------- */
 const _bl2=buildLevel;buildLevel=function(){_bl2();
- try{for(const o of NEW){scene.remove(o);const i=wrap.indexOf(o);if(i>=0)wrap.splice(i,1)}NEW.length=0;CV.length=0;BASEP.length=0;
+ try{for(const o of NEW){scene.remove(o);const i=wrap.indexOf(o);if(i>=0)wrap.splice(i,1)}NEW.length=0;CV.length=0;BASEP.length=0;RDR.length=0;
   if(MP)return;const L=LV[lv];
-  for(let i=0;i<(L.rad||0);i++)mkRadar((R()-.5)*2200,900+R()*1700);
+  for(let i=0;i<(L.rad||0);i++)mkRadar((R()-.5)*2200,900+R()*1700,i);
   if(L.base){mkGrossbasis(0,3300);chat('Große Militärbasis voraus – alles hier ist ein Ziel!')}
   const IP=[[250,3500],[-900,3350],[1150,3650]];
   for(let i=0;i<(L.isl||0)&&i<IP.length;i++){const[x,z]=IP[i],isl=bigIsland(x,z,360,h=>h<1.5?0xd8c68a:h<4.8?0xb7a978:0x65723f);mkConvoy(isl,x,z,360,i%2?-1:1)}
