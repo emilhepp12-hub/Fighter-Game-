@@ -763,6 +763,24 @@
     -0.002657,
     0.708599
    ]
+  },
+  "apache": {
+   "file": "apache.glb?v=1",
+   "rotY": -90,
+   "length": 16,
+   "ultraOnly": true
+  },
+  "reaper": {
+   "file": "reaper.glb?v=1",
+   "rotY": -90,
+   "length": 11,
+   "ultraOnly": true
+  },
+  "c130": {
+   "file": "c130.glb?v=2",
+   "rotY": 0,
+   "length": 24,
+   "ultraOnly": true
   }
  }
 }
