@@ -167,6 +167,8 @@ f16:{L:10,r:1.05,nl:5,w:[[.9,1.6],[6,-1.9],[6,-3],[.9,-3.4]],h:[[.9,-4.6],[3.6,-
 f18:{L:12,r:1,nl:5.5,bw:1.4,w:[[1,1.5],[6.3,-2.2],[6.3,-3.4],[1,-4]],h:[[1,-5.2],[4,-7],[4,-8],[1,-7.6]],cn:[[.9,5],[3.2,2.2],[.9,2.2]],f:[2,3.6,3.2,1.8,-5.6,.4],e:2,es:1.1,cp:[2.2,3],iv:[1.3,1.2,3.5,1.7,-.8,2,1]},
 f35:{L:12,r:1.15,nl:5,bw:1.4,bh:.9,dn:1,w:[[1,1.5],[6.5,-2.8],[6.5,-4.2],[1,-4.2]],h:[[1,-5.5],[4.3,-7.2],[4.3,-8.2],[1,-8]],f:[2,3.2,3.6,1.9,-6,.45],e:1,es:0,cp:[2.6,3],iv:[1.5,1.2,3,1.8,-.7,2.2,1]},
 sr71:{L:22,r:1.1,nl:11,bw:1.2,dn:1,w:[[1,4],[8.5,-4],[8.5,-7],[1,-9]],cn:[[.5,9],[2.6,4],[.5,4]],f:[2,4.6,4.5,3.6,-8,.1],e:0,ge:[[-3.6,-11],[3.6,-11]],cp:[2,6],x:1},
+f4:{L:12,r:1.05,nl:5.5,bw:1.3,w:[[1,1.8],[6.6,-2.8],[6.6,-4.2],[1,-4.4]],h:[[1,-5.8],[4.2,-7.4],[4.2,-8.3],[1,-8]],f:[1,3.6,3.8,0,-5.2,0],e:2,es:1,cp:[2.4,2.8],iv:[1.2,1.2,3.5,1.7,-.6,2,1]},
+f117:{L:18,r:.9,nl:0,cp:[2,4]},
 f22:{L:13,r:1.1,nl:6,bw:1.7,bh:.75,dn:1,w:[[1.4,3.2],[7.2,-2.6],[7.2,-4],[1.4,-5.6]],h:[[1.4,-6],[4.8,-8],[4.8,-9],[1.4,-8.8]],f:[2,3.8,4,2.3,-6.5,.5],e:2,es:1.3,cp:[3,3.2],iv:[1.7,1.1,4,2.1,-.5,2.5,1]}};
 const pnl=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#888';x.fillRect(0,0,256,256);x.fillStyle='#444';for(let i=0;i<8;i++){x.fillRect(i*32+R()*6,0,2,256);x.fillRect(0,i*40+R()*8,256,2)}for(let i=0;i<300;i++){x.fillStyle=R()<.5?'#999':'#777';x.fillRect(R()*256,R()*256,3,2)}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t})();
 /* ===== Flugzeug-Lackierung: prozedurale Panel-/Nieten-/Schmutz-Texturen (Mittel: Albedo, Hoch: + Bump + Rauheit/Metall) ===== */
@@ -354,7 +356,18 @@ function mkGJ(id,c,ac,sc){const hq=window.HQ,g=new THREE.Group(),pu=id==='phanto
 SP.su34=Object.assign({},SP.mig29||SP.f16,{L:14,r:1.25,nl:7});SP.b2=Object.assign({},SP.f16,{L:9,r:1.2,nl:4,w:[[.9,3.2],[11,-6.5],[11,-8],[.9,-4]],h:[[.9,-4],[1.4,-4.4],[1.4,-4.8],[.9,-4.6]]});
 function SJ_B2(){try{return PL[selP].id==='b2'}catch(e){return false}}
 function SJ_BIG(p){for(let i=0;i<5;i++){const a=i*1.2566,q=p.clone();q.x+=Math.cos(a)*22;q.z+=Math.sin(a)*22;bimp(q)}boom(p.clone(),3.2)}
-function mkJet2(id,c,ac,sc){if(id==='gespenst'||id==='phantom')return mkGJ(id,c,ac,sc);if(id==='a10')return mkA10(c,ac,sc);if(id==='f14')return mkF14(c,ac,sc);if(id==='f104')return mkF104(c,ac,sc);if(id==='f22'||id==='f18')return mkHQ(id,c,ac,sc);const S=SP[id]||SP.f16,g=new THREE.Group(),m=MS(c),d=MS(0x2b3340),a=MS(ac),w=MS(c,{side:THREE.DoubleSide}),L=S.L,r=S.r,bw=S.bw||1,bh=S.bh||1,P2=Math.PI/2;
+function mkF117(c,ac,sc){const g=new THREE.Group(),m=MS(c),d=MS(ac),gl=MS(0x66ccff,{emissive:0x222a33,metalness:.8,roughness:.15});m.flatShading=true;m.side=THREE.DoubleSide;
+ const V=[[0,0,10],[2.2,.15,4],[7,0,-6.2],[3.2,0,-8.2],[0,0,-9.5],[-2.2,.15,4],[-7,0,-6.2],[-3.2,0,-8.2],[0,1.5,2],[0,1.3,-3],[0,.9,-8.5],[0,.4,7],[0,-.9,2],[0,-.9,-6]];
+ const F=[[0,11,1],[11,8,1],[1,8,9],[1,9,2],[2,9,3],[3,9,10],[3,10,4],[0,1,12],[1,13,12],[1,2,13],[2,3,13],[3,4,13],[10,4,13],
+  [0,5,11],[11,5,8],[5,9,8],[5,6,9],[6,7,9],[7,10,9],[7,4,10],[0,12,5],[5,12,13],[5,13,6],[6,13,7],[7,13,4]];
+ const pos=[];F.forEach(f=>f.forEach(i=>pos.push(...V[i])));
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.computeVertexNormals();
+ const body=new THREE.Mesh(geo,m);g.add(body);
+ const can=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),gl);can.position.set(0,1.25,3.4);can.scale.set(.55,.4,1.5);g.add(can);
+ for(const s of[-1,1]){const t=new THREE.Mesh(new THREE.BoxGeometry(.12,2.4,2.8),d);t.position.set(s*1.5,1.3,-7.4);t.rotation.z=-s*.5;t.rotation.x=.12;g.add(t)}
+ const gg=new THREE.Group();gg.position.z=-9.8;for(const s of[-1,1]){const q=new THREE.Mesh(new THREE.SphereGeometry(.45,10,8),new THREE.MeshBasicMaterial({color:0x66bbff}));q.position.set(s*1.3,.3,0);q.scale.z=2.2;gg.add(q)}g.add(gg);g.glow=gg;
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});if(sc)g.scale.set(sc[0],sc[1],sc[2]);return g}
+function mkJet2(id,c,ac,sc){if(id==='gespenst'||id==='phantom')return mkGJ(id,c,ac,sc);if(id==='f117')return mkF117(c,ac,sc);if(id==='a10')return mkA10(c,ac,sc);if(id==='f14')return mkF14(c,ac,sc);if(id==='f104')return mkF104(c,ac,sc);if(id==='f22'||id==='f18')return mkHQ(id,c,ac,sc);const S=SP[id]||SP.f16,g=new THREE.Group(),m=MS(c),d=MS(0x2b3340),a=MS(ac),w=MS(c,{side:THREE.DoubleSide}),L=S.L,r=S.r,bw=S.bw||1,bh=S.bh||1,P2=Math.PI/2;
  const add=(geo,mat,x,y,z)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o};
  const poly=(p,t,y)=>{const s=new THREE.Shape();p.forEach((q,i)=>i?s.lineTo(q[0],q[1]):s.moveTo(q[0],q[1]));const hq=window.HQ,bt=Math.min(.07,t*.3),g0=XG(s,hq?{depth:t-2*bt,bevelEnabled:true,bevelThickness:bt,bevelSize:bt,bevelOffset:-bt,bevelSegments:4,curveSegments:12}:{depth:t,bevelEnabled:false}).rotateX(P2),ge=hq?smoothGeo(g0):g0;add(ge,w,0,y,0);add(ge.clone().scale(-1,1,1),w,0,y,0)};
  if(window.MQ)add(loft(L,r,S.nl,bw,bh,S.cp[1]),m,0,0,0);else add(new THREE.CylinderGeometry(r,r*1.2,L,10).rotateX(P2),m,0,0,0).scale.set(bw,bh,1);
@@ -644,12 +657,14 @@ const PL=[{id:'mig21',n:'MIG-21',d:'FRÜHER ABFANGJÄGER',c:0x9aa7b3,a:0xc23b3b,
 {id:'f16',n:'F-16',d:'FIGHTING FALCON',c:0x7d8b99,a:0x2a3342,hp:290,gun:41,mis:185,turn:102,spd:110,$:3500},
 {id:'f18',n:'F/A-18',d:'TRAGERGESTUTZTER JAGER',c:0x636e7a,a:0xe0a030,hp:330,gun:45,mis:200,turn:100,spd:112,$:4400},
 {id:'f35',n:'F-35',d:'TARNKAPPEN-MEHRZWECKJAGER',c:0x55606c,a:0x20252c,hp:370,gun:50,mis:225,turn:103,spd:118,$:5500},
+{id:'f4',n:'F-4 PHANTOM II',d:'LEGENDÄRER ZWEIMOTORIGER ABFANGJÄGER',c:0x7a8794,a:0x2f3a44,hp:360,gun:48,mis:215,turn:95,spd:125,$:5800},
 {id:'sr71',n:'SR-71 BLACKBIRD',d:'MACH-3-AUFKLARER',c:0x14161c,a:0x444c58,hp:400,gun:54,mis:240,turn:85,spd:150,s:[.6,.6,.6],$:6800},
 {id:'f22',n:'F-22 RAPTOR',d:'LUFTUBERLEGENHEITSJAGER',c:0xa0a8b0,a:0x8a929a,hp:450,gun:62,mis:270,turn:110,spd:130,$:8500},
 {id:'a10',n:'A-10 WARTHOG',d:'ERDKAMPFFLUGZEUG · GAU-8 MINIGUN',c:0x6b7560,a:0x3a4048,hp:420,gun:85,mis:160,turn:70,spd:72,$:4000},
 {id:'f14',n:'F-14 TOMCAT',d:'SCHWENKFLÜGEL-JÄGER · V = FLÜGEL',c:0x6f7b88,a:0x2a3038,hp:380,gun:52,mis:230,turn:100,spd:120,$:6200},
 {id:'f104',n:'F-104 STARFIGHTER',d:'MACH-2-ABFANGJÄGER',c:0xaab4bf,a:0x333a44,hp:250,gun:44,mis:180,turn:70,spd:150,$:5200},
 {id:'su34',n:'SU-34',d:'FULLBACK · SCHWERER JAGDBOMBER · G = FAHRWERK',c:0x6b7a6a,a:0x2a2f2a,hp:480,gun:72,mis:230,turn:88,spd:115,$:9500},
+{id:'f117',n:'F-117 NIGHTHAWK',d:'FACETTIERTER TARNKAPPEN-ERDKAMPFJET',c:0x1c1e24,a:0x2a2d34,hp:420,gun:40,mis:200,turn:80,spd:115,$:9800,em:.75,pt:['Gegner feuern 25% weniger Raketen']},
 {id:'b2',n:'B-2 SPIRIT',d:'TARNKAPPEN-BOMBER · NUR BOMBEN',c:0x23262c,a:0x3a3f48,hp:600,gun:0,mis:0,turn:60,spd:105,$:12000,pt:['NUR BOMBEN: 24 Stück, Salven à 4, Nachladen 6 s','G = STEALTH (8 s): kein Raketenschuss auf dich, Raketen verlieren dich']},
 {id:'gespenst',n:'GESPENST',d:'TARNKAPPENJÄGER',c:0x1b1d23,a:0xe23f64,hp:320,gun:40,mis:195,turn:104,spd:120,$:7500,sp:'swarm',em:.7,pt:['Gegner feuern 30% weniger Raketen','SPEZIAL: SCHWARM ×6 (E)']},
 {id:'phantom',n:'PHANTOM',d:'TARNKAPPEN-ABFANGJÄGER',c:0x1a1b22,a:0xa070ff,hp:340,gun:44,mis:260,turn:108,spd:140,$:9000,sp:'long',hom:2,pt:['Raketen schalten in 0,5 s auf das Ziel auf','SPEZIAL: WEITRAKETE ×6 (E)']}];
