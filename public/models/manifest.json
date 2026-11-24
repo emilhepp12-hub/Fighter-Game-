@@ -781,6 +781,18 @@
    "rotY": 0,
    "length": 24,
    "ultraOnly": true
+  },
+  "f4": {
+   "file": "f4.glb",
+   "rotY": -90,
+   "length": 19,
+   "ultraOnly": true
+  },
+  "f117": {
+   "file": "f117.glb",
+   "rotY": 0,
+   "length": 20,
+   "ultraOnly": true
   }
  }
 }
