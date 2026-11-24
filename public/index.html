@@ -398,8 +398,8 @@ function crash(w){if(state!=='play')return;if(MP&&MP.go&&MP.inv>0)return;boom(P.
 function hurt(d){d*=dmgK*D.d;lastHit=time;hull-=d;shake=.7;fl=.55;sfx(90,.2,'sawtooth',.1,-40);if(hull<=0&&state==='play')die()}
 function die(){state='over';boom(P.position,2.6);P.visible=false;if(score>hi){hi=score;try{localStorage.setItem('sj_hi'+hiLv,hi)}catch(e){}}$('hi').textContent=hi;
  $('msg').textContent='ABGESCHOSSEN! Punkte: '+score+' · Welle '+wave;$('msg').textContent+=' · +'+gain(score)+' Münzen';sel(selP);$('go').textContent='NOCHMAL';$('ov').style.display='flex'}
-function reset(){if(!OWN.includes(PL[selP].n)){$('msg').textContent='Dieses Flugzeug musst du erst kaufen!';return}clearTimeout(timer);[...en].forEach(e=>{scene.remove(e.m);e.mk.remove()});[...bul,...mis,...parts,...em,...fl2,...bb,...wr,...pu].forEach(o=>scene.remove(o.m));en=[];bb=[];wr=[];pu=[];bul=[];mis=[];parts=[];em=[];fl2=[];
- P.visible=true;P.position.set(0,250,0);yaw=roll=up=0;spd=140;hull=100;missiles=SJ_B2()?0:6;bombs=SJ_B2()?24:8;window.SJ_BRL=0;window.SJ_ST=0;window.SJ_STC=0;energy=100;score=0;wave=0;kills=0;pending=false;earn=0;flares=8;spCd=0;window.gc=0;loopP=-1;loopCd=0;state='play';$('ov').style.display='none';setSky(lv%3);hiLv=lv;try{hi=+localStorage.getItem('sj_hi'+lv)||(lv?0:+localStorage.getItem('sj_hi'))||0}catch(e){}$('hi').textContent=hi;buildLevel()}
+function reset(){{const _L=LV[lv];if(_L&&_L.bo&&!MP&&PL[selP].id!=='b2'){const bi=PL.findIndex(p=>p.id==='b2');if(bi>=0&&OWN.includes(PL[bi].n))sel(bi);else{$('msg').textContent='Dieses Level ist NUR mit einem Bomber spielbar – du brauchst den B-2 SPIRIT ('+(bi>=0?PL[bi].$:'?')+' Münzen)!';return}}}if(!OWN.includes(PL[selP].n)){$('msg').textContent='Dieses Flugzeug musst du erst kaufen!';return}clearTimeout(timer);[...en].forEach(e=>{scene.remove(e.m);e.mk.remove()});[...bul,...mis,...parts,...em,...fl2,...bb,...wr,...pu].forEach(o=>scene.remove(o.m));en=[];bb=[];wr=[];pu=[];bul=[];mis=[];parts=[];em=[];fl2=[];
+ P.visible=true;P.position.set(0,250,0);yaw=roll=up=0;spd=140;hull=100;missiles=SJ_B2()?0:6;bombs=SJ_B2()?24:8;window.SJ_BRL=0;window.SJ_ST=0;window.SJ_STC=0;energy=100;score=0;wave=0;kills=0;pending=false;earn=0;flares=8;spCd=0;window.gc=0;loopP=-1;loopCd=0;state='play';$('ov').style.display='none';setSky(lv%3);hiLv=lv;try{hi=+localStorage.getItem('sj_hi'+lv)||(lv?0:+localStorage.getItem('sj_hi'))||0}catch(e){}$('hi').textContent=hi;buildLevel();if(LV[lv].bo)chat('Bomber-Einsatz: nur Boden- und Seeziele – keine Jäger!')}
 function shoot(src,own,sp){const m=new THREE.Mesh(bg,own?bmP:bmE);sideT=!sideT;const A=own&&src.a10;if(A)src.a10.gs=45;m.position.set(A?0:(sideT?2.4:-2.4),A?-.6:-.2,A?7:3).applyQuaternion(src.quaternion).add(src.position);m.quaternion.copy(src.quaternion);
  const v=V(0,0,1).applyQuaternion(src.quaternion);if(!own)v.add(V(R()-.5,R()-.5,R()-.5).multiplyScalar(.05));scene.add(m);bul.push({m,v:v.multiplyScalar(sp),l:1.6,own})}
 function launch(){if(state!=='play'||missiles<1||SJ_B2())return;const mi=Math.min(missiles,2)-1;missiles--;const m=new THREE.Mesh(mg,mm);if(P.a10)P.a10.ms[mi].getWorldPosition(m.position);else m.position.copy(P.position).add(V(missiles%2?1.6:-1.6,-1,1.5).applyQuaternion(P.quaternion));scene.add(m);
@@ -507,7 +507,7 @@ function update(dt){
  spd+=((boost?240*sK:(70+(window.THR===undefined?.5:window.THR)*140)*sK)*WM[0]-spd)*Math.min(1,2*dt);
  P.rotation.set(-up,yaw,roll);const fwd=V(0,0,1).applyQuaternion(P.quaternion);P.position.addScaledVector(fwd,spd*dt);
  if(P.position.y<6)crash('Meer');for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=P.position.x-o.position.x,lz=P.position.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2){const h=u.hf(lx,lz)+4;if(P.position.y<h)crash('Insel')}}
- for(const e of en){if(e.dead)continue;if(e.g){const q=e.m.worldToLocal(P.position.clone());if(e.big){if(e.m.userData.hit?e.m.userData.hit(q):((q.x>-24&&q.x<32&&Math.abs(q.z)<130&&q.y<14.5)||(q.x>-19&&q.x<-7&&q.z>-28&&q.z<0&&q.y<50)))crash('Flugzeugträger')}else if(Math.hypot(q.x,q.z)<34&&q.y<26)crash('Basis')}else if(e.m.position.distanceToSquared(P.position)<49){e.hp=0;kill(e);crash('Kollision')}}
+ for(const e of en){if(e.dead)continue;if(e.g){const q=e.m.worldToLocal(P.position.clone());if(e.big){if(e.m.userData.hit?e.m.userData.hit(q):((q.x>-24&&q.x<32&&Math.abs(q.z)<130&&q.y<14.5)||(q.x>-19&&q.x<-7&&q.z>-28&&q.z<0&&q.y<50)))crash('Flugzeugträger')}else if(Math.hypot(q.x,q.z)<(e.cz||34)&&q.y<(e.cy||26))crash('Basis')}else if(e.m.position.distanceToSquared(P.position)<49){e.hp=0;kill(e);crash('Kollision')}}
  if(P.position.y>1100){P.position.y=1100;up=Math.min(up,0)}
  P.glow.scale.set(1,1,(boost?3.5:2)*(.8+R()*.4));if(boost&&R()<.7)puff(P.position.clone().addScaledVector(fwd,-9));
  if(time-lastHit>3)hull=Math.min(100,hull+6*dt);if(hull<35&&R()<.5)puff(P.position.clone().add(V(0,0,-6).applyQuaternion(P.quaternion)));mT+=dt;if(mT>12){mT=0;missiles=Math.min(12,missiles+1);flares=Math.min(8,flares+1)}
@@ -547,7 +547,7 @@ function update(dt){
   if(m.m.position.y<0)m.l=0}
  em=em.filter(m=>m.l>0||(scene.remove(m.m),false));
  for(const f of fl2){f.l-=dt;f.m.position.addScaledVector(f.v,dt);f.v.multiplyScalar(1-.6*dt);if(R()<.5)puff(f.m.position)}fl2=fl2.filter(f=>f.l>0||(scene.remove(f.m),false));
- for(const b of bb){b.v.y-=90*dt;b.m.position.addScaledVector(b.v,dt);b.m.quaternion.setFromUnitVectors(Zv,b.v.clone().normalize());b.l-=dt;if(R()<.5)puff(b.m.position);const p=b.m.position;let hit=p.y<=1||b.l<=0;if(!hit)for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=p.x-o.position.x,lz=p.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2&&p.y<u.hf(lx,lz)){hit=true;break}}if(!hit)for(const e of en)if(e.g){const l=e.m.worldToLocal(p.clone());if(e.big?(Math.abs(l.x)<28&&Math.abs(l.z)<125&&l.y<14):(Math.hypot(l.x,l.z)<30&&l.y<26)){hit=true;break}}if(hit){b.l=-1;bimp(p.clone());if(b.big)SJ_BIG(p)}}
+ for(const b of bb){b.v.y-=90*dt;b.m.position.addScaledVector(b.v,dt);b.m.quaternion.setFromUnitVectors(Zv,b.v.clone().normalize());b.l-=dt;if(R()<.5)puff(b.m.position);const p=b.m.position;let hit=p.y<=1||b.l<=0;if(!hit)for(const o of wrap){const u=o.userData;if(!u.hf)continue;const lx=p.x-o.position.x,lz=p.z-o.position.z;if(lx*lx+lz*lz<u.r*u.r*2&&p.y<u.hf(lx,lz)){hit=true;break}}if(!hit)for(const e of en)if(e.g){const l=e.m.worldToLocal(p.clone());if(e.big?(Math.abs(l.x)<28&&Math.abs(l.z)<125&&l.y<14):(Math.hypot(l.x,l.z)<(e.cz||30)&&l.y<(e.cy||26))){hit=true;break}}if(hit){b.l=-1;bimp(p.clone());if(b.big)SJ_BIG(p)}}
  bb=bb.filter(b=>b.l>0||(scene.remove(b.m),false));
  for(const w of wr){w.v.y-=55*dt;w.m.position.addScaledVector(w.v,dt);w.m.rotation.z+=4*dt;w.m.rotation.x+=1.5*dt;w.t-=dt;fx(w.m.position,V(R()-.5,R()*.5,R()-.5).multiplyScalar(10),.6,3,R()<.5?pm[0]:smk);if(w.t<=0||w.m.position.y<3){boom(w.m.position,1.4);scene.remove(w.m);w.t=-1}}wr=wr.filter(w=>w.t>0);
  for(const q of pu){q.l-=dt;q.m.rotation.y+=2.5*dt;q.m.rotation.x+=1.2*dt;if(q.m.position.distanceTo(P.position)<30){if(q.t==0){hull=Math.min(100,hull+40);chat('Reparatur +40')}else if(q.t==1){missiles=Math.min(12,missiles+4);flares=Math.min(8,flares+3);chat('Raketen +4')}else{bombs=Math.min(SJ_B2()?24:12,bombs+3);chat('Bomben +3')}sfx(900,.15,'sine',.06,200);q.l=-1}}pu=pu.filter(q=>q.l>0||(scene.remove(q.m),false));
@@ -558,7 +558,7 @@ function hud(fwd){
  for(const e of en){const s=scr(e.m.position),on=!s.b&&Math.abs(s.x)<.95&&Math.abs(s.y)<.9;s.x=clamp(s.x,-.93,.93);s.y=clamp(s.y,-.88,.88);
   e.mk.style.left=(s.x*.5+.5)*100+'%';e.mk.style.top=(-s.y*.5+.5)*100+'%';e.mk.className='mk'+(on?' on':'')+(e===lock?' lk':'')+(e.g?' gt':'');e.mk.dataset.d=on?Math.round(e.m.position.distanceTo(P.position))+'m':''}
  const c=scr(P.position.clone().addScaledVector(fwd,500)),cr=$('cr');cr.style.left=(c.x*.5+.5)*100+'%';cr.style.top=(-c.y*.5+.5)*100+'%';
- $('sc').textContent=score+' · '+earn+' MÜNZEN';$('wv').textContent=LV[lv].n+' · WELLE '+Math.min(wave,LV[lv].w.length)+'/'+LV[lv].w.length+' · ZIELE '+en.length;{const n=Math.ceil(Math.max(0,hull)/10);if(n!==window.hsN){window.hsN=n;$('hs').innerHTML='<i></i>'.repeat(n)}$('hn').textContent=Math.max(0,Math.round(hull*2.3))}
+ $('sc').textContent=score+' · '+earn+' MÜNZEN';$('wv').textContent=LV[lv].n+(LV[lv].w.length?' · WELLE '+Math.min(wave,LV[lv].w.length)+'/'+LV[lv].w.length:' · BOMBER-EINSATZ')+' · ZIELE '+en.length;{const n=Math.ceil(Math.max(0,hull)/10);if(n!==window.hsN){window.hsN=n;$('hs').innerHTML='<i></i>'.repeat(n)}$('hn').textContent=Math.max(0,Math.round(hull*2.3))}
  {const rc=$('rdc').getContext('2d');rc.clearRect(0,0,120,120);rc.strokeStyle='#fff6';rc.beginPath();rc.arc(60,60,58,0,6.3);rc.moveTo(60,2);rc.lineTo(60,118);rc.moveTo(2,60);rc.lineTo(118,60);rc.stroke();rc.fillStyle='#8cf';rc.beginPath();rc.moveTo(60,50);rc.lineTo(65,64);rc.lineTo(55,64);rc.fill();rc.fillStyle='#f55';
   for(const e of en){const rx=e.m.position.x-P.position.x,rz=e.m.position.z-P.position.z,f=rx*Math.sin(yaw)+rz*Math.cos(yaw),r=-rx*Math.cos(yaw)+rz*Math.sin(yaw),s=55/Math.max(Math.hypot(f,r),1500);rc.fillStyle=e.g?'#fc3':'#f55';rc.fillRect(60+r*s-2,60-f*s-2,4,4)}}$('eb').style.width=energy+'%';
  $('ms').textContent='TÄUSCHK. '+flares+' · BOMBEN '+bombs+' · RAKETEN '+'▮'.repeat(missiles)+(P.sp?' · SPEZIAL '+(spCd>0?Math.ceil(spCd)+'s':'BEREIT (E)'):'');$('wn').style.opacity=em.length?1:0;
@@ -571,11 +571,13 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
  parts=parts.filter(p=>p.l>0||(scene.remove(p.m),false));
  fl*=.92;$('fl').style.opacity=fl;if(window.HQ)reflPass();ren.render(scene,cam);if(fpA())cockR()}
 let bombs=8;
-const LV=[{n:'ERSTER FLUG',w:[[0,0],[0,0,1]],b:0,c:0},{n:'BUNKERJAGD',w:[[0,1]],b:6,c:0},{n:'FLUGZEUGTRÄGER',w:[[0,1],[0,0,2]],b:2,c:1},{n:'STAHLGEWITTER',w:[[0,1,1],[0,2,0],[1,1,2]],b:5,c:1},{n:'DAS LETZTE ASS',w:[[0,1,1,2],[3,0,0]],b:4,c:2},
-{n:'INSELSTURM',w:[[0,1,1],[1,2],[0,0,2]],b:8,c:1},{n:'EISERNE FLOTTE',w:[[1,1,2],[2,2],[0,2,3]],b:4,c:3},{n:'LUFTSCHLACHT',w:[[0,0,1,1],[2,2,2],[0,1,2,3],[3,3]],b:3,c:1},{n:'FESTUNG',w:[[0,1],[2,2],[2,3]],b:10,c:2},{n:'STURMAUGE',w:[[2,2,3],[3,3],[2,2,2,3]],b:6,c:3}];
+const LV=[{n:'ERSTER FLUG',w:[[0,0],[0,0,1]],b:0,c:0},{n:'BUNKERJAGD',w:[[0,1]],b:6,c:0},{n:'FLUGZEUGTRÄGER',w:[[0,1],[0,0,2]],b:2,c:1},{n:'STAHLGEWITTER',w:[[0,1,1],[0,2,0,4],[1,1,2]],b:5,c:1},{n:'DAS LETZTE ASS',w:[[0,1,1,2],[3,0,0]],b:4,c:2},
+{n:'INSELSTURM',w:[[0,1,1],[1,2],[0,0,2,5]],b:8,c:1},{n:'EISERNE FLOTTE',w:[[1,1,2],[2,2,4,5],[0,2,3]],b:4,c:3},{n:'LUFTSCHLACHT',w:[[0,0,1,1],[2,2,2],[0,1,2,3],[3,3]],b:3,c:1},{n:'FESTUNG',w:[[0,1],[2,2],[2,3,6]],b:10,c:2},{n:'STURMAUGE',w:[[2,2,3,4],[3,3],[2,2,2,3,5,6]],b:6,c:3},
+{n:'GRENZSCHLACHT',w:[[1,1,2],[2,2,3,4,4],[0,2,3,3,5,6]],b:7,c:2},{n:'SCHATTENFLUG',w:[],b:12,c:2,bo:1},{n:'TIEFSEE-SCHLAG',w:[],b:3,c:3,bo:1},{n:'ADLERHORST',w:[[2,2,3],[3,3,3,5,5],[2,2,3,3,4,6]],b:9,c:3},{n:'OPERATION SPIRIT',w:[],b:14,c:4,bo:1},
+{n:'FUNKSTILLE',w:[[1,2,2,4],[2,3,3,5,5,6]],b:0,c:0,rad:5,isl:1},{n:'GROSSBASIS',w:[[2,3,3,4,5],[3,3,3,3,6,6]],b:0,c:0,base:1,rad:2},{n:'INSELKRIEG',w:[[2,2,3,5,5,4],[3,3,3,6,4]],b:0,c:0,isl:3,rad:3}];
 const ET=[{id:'mig29',c:0xc23b3b,a:0x222222,h:1,s:1,t:1,sc:null,f:1},{id:'mig21',c:0xd9822b,a:0x222222,h:.6,s:1.35,t:1.1,sc:[.75,.75,.75],f:1.3},{id:'su57',c:0x8a3bc2,a:0x111111,h:2.2,s:.8,t:.7,sc:[1.5,1.2,1.4],f:.8,m:1,v:4},{id:'f22',c:0x15151a,a:0xffd400,h:5,s:1.2,t:1.4,sc:[1.1,1.1,1.1],f:1.5,m:1,v:7}];
 const DF=[{n:'LEICHT',h:.7,d:.6,f:.7,t:.8},{n:'NORMAL',h:1,d:1,f:1,t:1},{n:'SCHWER',h:1.5,d:1.5,f:1.4,t:1.2}];let lv=0,D=DF[1];
-function renderUI(){$('lv').innerHTML='<small>LEVEL</small>'+LV.map((l,i)=>`<button class='${i==lv?'on':''}' data-i='${i}'>${i+1}</button>`).join('')+`<span>${LV[lv].n}</span>`;$('df').innerHTML='<small>SCHWIERIGKEIT</small>'+DF.map((d,i)=>`<button class='${DF[i]===D?'on':''}' data-j='${i}'>${d.n}</button>`).join('')}
+function renderUI(){$('lv').innerHTML='<small>LEVEL</small>'+LV.map((l,i)=>`<button class='${i==lv?'on':''}' data-i='${i}'${l.bo?" title='Nur Bomber (B-2)'":''}>${i+1}${l.bo?'✈':''}</button>`).join('')+`<span>${LV[lv].n}${LV[lv].bo?' · NUR BOMBER (B-2)':''}</span>`;$('df').innerHTML='<small>SCHWIERIGKEIT</small>'+DF.map((d,i)=>`<button class='${DF[i]===D?'on':''}' data-j='${i}'>${d.n}</button>`).join('')}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.i!==undefined){lv=+b.dataset.i;renderUI()}if(b.dataset.j!==undefined){D=DF[+b.dataset.j];renderUI()}});
 function win(){state='over';if(score>hi){hi=score;try{localStorage.setItem('sj_hi'+hiLv,hi)}catch(e){}}$('hi').textContent=hi;$('msg').textContent='MISSION ERFÜLLT! Punkte: '+score;$('msg').textContent+=' · +'+gain(score)+' Münzen';if(lv<LV.length-1)lv++;sel(selP);renderUI();$('go').textContent='WEITER';$('ov').style.display='flex'}
 let coins=0,UPG={},OWN=['MIG-21'],INF=false,NRM=null;try{const s=JSON.parse(localStorage.getItem('sj_sv')||'{}');coins=s.c||0;UPG=s.u||{};OWN=s.o||[];if(!OWN.includes('MIG-21'))OWN.push('MIG-21');NRM={c:coins,u:UPG,o:OWN};if(s.i){INF=true;coins=Infinity;UPG=s.x&&s.x.u?s.x.u:JSON.parse(JSON.stringify(UPG));OWN=s.x&&s.x.o?s.x.o:OWN.slice();if(!OWN.includes('MIG-21'))OWN.push('MIG-21')}}catch(e){}
@@ -1626,7 +1628,7 @@ function mkShip(x,z){const g=new THREE.Group(),sc=new THREE.Group(),p=proc(),H=6
  sc.scale.setScalar(K);sc.position.z=-2.5*K;sc.add(p.G);g.add(sc,wake());g.position.set(x,0,z);g.rotation.y=R()*6.28;scene.add(g);$('hud').appendChild(mk);
  const e={g:1,big:false,m:g,hp:H,hp0:H,r2:5200,rng:0,cd:99,mk,dead:0,ship:1};en.push(e);
  SH.push({e,g,sc,proc:p.G,tur:p.tur,rad:p.rad,mrad:[],mdl:null,turn:(R()<.5?-1:1)*(.008+R()*.01),cd:[2+R()*2,1,1],burst:[0,6,6]})}
-const LVN=[0,0,1,0,1,2,1,2,2,3];
+const LVN=[0,0,1,0,1,2,1,2,2,3,2,1,6,3,4,0,1,0];
 const _bl=buildLevel;buildLevel=function(){_bl();try{if(MP)return;const n=lv<LVN.length?LVN[lv]:3;for(let i=0;i<n;i++)mkShip((R()-.5)*2200,700+i*650+R()*450);load();apply()}catch(e){console.warn('Zerstörer',e)}};
 const _sq=setQ;setQ=function(q){_sq(q);try{load();apply()}catch(e){}};
 const _k=kill;kill=function(e){if(e&&e.ship&&!e.dead)try{for(let i=-3;i<=3;i++)boom(e.m.localToWorld(V((R()-.5)*8,10+R()*10,i*22)),2.2,1)}catch(x){}_k(e)};
@@ -1656,6 +1658,205 @@ const pvLast=new THREE.Vector3(),pv=new THREE.Vector3(),lp=new THREE.Vector3();l
      if(main){shell(wp,420,.03,3.8,dist);boom(wp,.35,1);S.cd[j]=2.3/D.f}
      else{shell(wp,520,.16,2.2,dist);if(--S.burst[j]>0)S.cd[j]=.09/D.f;else{S.burst[j]=6;S.cd[j]=2.3/D.f}}}})}
  }catch(e){}})();
+})();
+</script>
+<script>
+/* ===== NEU: AH-64 Apache · MQ-9 Reaper · C-130 Hercules · Mobile Radarstation · Großbasis · Panzerinseln ===== */
+(function(){
+const P2=Math.PI/2;
+const mesh=(geo,mat,x,y,z,p)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.castShadow=true;if(p)p.add(o);return o};
+const spinTo=(disc,obj,axis,rate)=>{disc.onBeforeRender=function(){obj.rotation[axis]=performance.now()*rate}};
+const blur=(geo,p)=>{const o=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.1,depthWrite:false,side:THREE.DoubleSide}));p.add(o);return o};
+
+/* ---------- Flugzeug-Modelle (prozedural) ---------- */
+function kit(g){const add=(geo,mat,x,y,z,p=g)=>mesh(geo,mat,x,y,z,p),
+ S=(r,mat,x,y,z,sx,sy,sz,p=g)=>{const o=add(new THREE.SphereGeometry(r,18,12),mat,x,y,z,p);o.scale.set(sx,sy,sz);return o},
+ Y=(rt,rb,h,mat,x,y,z,p=g)=>add(new THREE.CylinderGeometry(rt,rb,h,14).rotateX(P2),mat,x,y,z,p),
+ Bx=(w,h,d,mat,x,y,z,p=g)=>add(new THREE.BoxGeometry(w,h,d),mat,x,y,z,p);
+ return{add,S,Y,Bx}}
+const GLASS=()=>MS(0x66ccff,{emissive:0x222a33,metalness:.8,roughness:.12,transparent:true,opacity:.55,depthWrite:false});
+function fin0(g){g.glow=new THREE.Group();g.glow.visible=false;g.add(g.glow)}
+
+function mkApache(c,ac,sc){
+ const g=new THREE.Group(),m=MS(c),d=MS(0x1c2128),a=MS(ac),gl=GLASS(),{add,S,Y,Bx}=kit(g);
+ S(1,m,0,0,.4,.95,1.1,4.3);S(.55,d,0,-.4,4.7,.9,.85,1.1);
+ S(1,gl,0,.9,3.0,.58,.5,1.5);S(1,gl,0,1.15,1.1,.58,.55,1.3);
+ for(const s of[-1,1])S(.5,m,s*.9,.95,-.6,.6,.55,2.2);
+ Y(.5,.17,7.2,m,0,.35,-6.3);
+ Bx(.14,2.8,1.8,m,0,1.7,-9.2).rotation.x=-.25;Bx(3.8,.1,.95,m,0,.55,-9.4);
+ const tr=new THREE.Group();tr.position.set(.4,1.5,-9.5);g.add(tr);
+ for(let i=0;i<2;i++)Bx(.05,1.7,.16,d,0,0,0,tr).rotation.x=i*P2;
+ spinTo(blur(new THREE.CircleGeometry(.85,20).rotateY(P2),tr),tr,'x',.06);
+ add(new THREE.CylinderGeometry(.16,.22,1.1,8),d,0,1.5,.3);
+ const rt=new THREE.Group();rt.position.set(0,2.15,.3);g.add(rt);
+ for(let i=0;i<4;i++){const b=add(new THREE.BoxGeometry(.42,.05,6.9).translate(0,0,3.45),d,0,0,0,rt);b.rotation.y=i*P2}
+ spinTo(blur(new THREE.CircleGeometry(6.9,40).rotateX(-P2),rt),rt,'y',.035);
+ Bx(6.6,.13,1.4,m,0,-.05,.3);
+ for(const s of[-1,1]){for(const x of[2.1,3.1]){Y(.32,.32,2.4,a,s*x,-.35,.8);add(new THREE.ConeGeometry(.32,.5,12).rotateX(P2),d,s*x,-.35,2.25)}
+  Y(.1,.1,1.9,d,s*1.4,-.5,.6);Y(.1,.1,1.9,d,s*2.6,-.55,.6);
+  add(new THREE.CylinderGeometry(.28,.28,.2,12).rotateZ(P2),d,s*1.15,-1.0,.5)}
+ Y(.09,.09,1.5,d,0,-.95,3.7);add(new THREE.CylinderGeometry(.18,.18,.16,10).rotateZ(P2),d,0,-.55,-8.6);
+ fin0(g);if(sc)g.scale.set(sc[0],sc[1],sc[2]);return g}
+
+function mkReaper(c,ac,sc){
+ const g=new THREE.Group(),m=MS(c),d=MS(0x23282f),a=MS(ac),{add,S,Y,Bx}=kit(g);
+ S(1,m,0,.1,.2,.7,.75,3.4);S(1,m,0,.2,3.1,.82,.85,1.3);S(.4,d,0,-.55,3.3,1,1,1);
+ Y(.3,.12,5.5,m,0,.2,-5.4);Bx(20,.13,1.6,m,0,.25,.5);
+ for(const s of[-1,1]){const o=Bx(.1,2.4,1.3,m,s*.9,.9,-7.2);o.rotation.z=-s*.6;Bx(.5,.14,1.6,a,s*10,.25,.5)}
+ Bx(.1,1.2,1.1,m,0,-.7,-7.4);S(.45,d,0,.3,-8.4,1,1,1.5);
+ const pr=new THREE.Group();pr.position.set(0,.3,-9.1);g.add(pr);
+ for(let i=0;i<3;i++){const b=add(new THREE.BoxGeometry(.12,1.3,.04).translate(0,.65,0),d,0,0,0,pr);b.rotation.z=i*2.094}
+ spinTo(blur(new THREE.CircleGeometry(1.3,24),pr),pr,'z',.05);
+ for(const s of[-1,1])for(const x of[2.6,4.6,6.8]){Y(.13,.13,2.4,d,s*x,-.3,.8);Bx(.08,.3,.4,d,s*x,-.15,.5)}
+ fin0(g);if(sc)g.scale.set(sc[0],sc[1],sc[2]);return g}
+
+function mkHerc(c,ac,sc){
+ const g=new THREE.Group(),m=MS(c),d=MS(0x1c2128),a=MS(ac),gl=GLASS(),{add,S,Y,Bx}=kit(g);
+ Y(1.75,1.75,17,m,0,0,-.5);S(1,m,0,-.1,8,1.75,1.7,2.4);
+ const tl=Y(1.75,.9,6,m,0,.8,-11.5);tl.rotation.x=.14;
+ S(1,gl,0,1.15,6.6,.9,.7,1.5);
+ Bx(32,.5,4.2,m,0,1.75,.5);
+ [-10.5,-5.5,5.5,10.5].forEach((x,i)=>{Y(.6,.6,3.4,d,x,1.0,3.0);Bx(.5,1,3,m,x,1.4,1.5);
+  const pr=new THREE.Group();pr.position.set(x,1.0,4.9);g.add(pr);
+  for(let k=0;k<4;k++){const b=add(new THREE.BoxGeometry(.16,1.9,.05).translate(0,.95,0),d,0,0,0,pr);b.rotation.z=k*P2}
+  add(new THREE.ConeGeometry(.35,.9,10).rotateX(P2),a,x,1.0,5.3);
+  spinTo(blur(new THREE.CircleGeometry(1.9,28),pr),pr,'z',i%2?.045:-.045)});
+ for(const s of[-1,1])Bx(1.4,1.6,7,m,s*1.9,-1.0,-.5);
+ Bx(.35,5.4,3.6,m,0,4.4,-12.2).rotation.x=-.2;Bx(11.5,.3,2.6,m,0,7.0,-12.6);
+ Bx(2.8,.05,3,a,0,-1.7,-12);Bx(3.6,.3,17,a,0,.9,-.5);
+ fin0(g);if(sc)g.scale.set(sc[0],sc[1],sc[2]);return g}
+
+const _mj=mkJet2;mkJet2=function(id,c,ac,sc){if(id==='apache')return mkApache(c,ac,sc);if(id==='reaper')return mkReaper(c,ac,sc);if(id==='c130')return mkHerc(c,ac,sc);return _mj(id,c,ac,sc)};
+const _ey=eyeFor;eyeFor=function(p){if(p.id==='apache')return V(0,1.2,3.4);if(p.id==='reaper')return V(0,.95,4.0);if(p.id==='c130')return V(0,1.2,8.2);return _ey(p)};
+PL.push(
+ {id:'apache',n:'AH-64 APACHE',d:'KAMPFHUBSCHRAUBER · SCHWER GEPANZERT',c:0x4a5240,a:0x1f2327,hp:520,gun:90,mis:210,turn:105,spd:66,$:5800,pt:['Schwerer Panzerjäger mit Kanone und Raketen','Langsam, aber wendig und sehr robust']},
+ {id:'reaper',n:'MQ-9 REAPER',d:'BEWAFFNETE KAMPFDROHNE',c:0xb9bfc6,a:0x4a5058,hp:230,gun:36,mis:270,turn:90,spd:80,$:3400,pt:['Sehr starke Raketen, kaum Panzerung']},
+ {id:'c130',n:'C-130 HERCULES',d:'TRANSPORTFLUGZEUG · FLIEGENDE FESTUNG',c:0x59624d,a:0x2b3028,hp:900,gun:30,mis:120,turn:48,spd:70,s:[.7,.7,.7],$:7200,pt:['Riesige Panzerung, aber sehr träge']});
+
+/* ---------- Feindliche Versionen (Gegnertypen 4–6, in den Wellen der Level) ---------- */
+ET.push({id:'apache',c:0x4a5240,a:0x1f2327,h:2.2,s:.55,t:.9,sc:[1.1,1.1,1.1],f:1.3,m:1,r2:220},
+ {id:'reaper',c:0xb9bfc6,a:0x4a5058,h:.8,s:.65,t:.8,sc:null,f:.9,m:1,r2:160},
+ {id:'c130',c:0x59624d,a:0x2b3028,h:4,s:.5,t:.35,sc:[.8,.8,.8],f:.7,r2:520});
+const _sp=spawn;spawn=function(ty){_sp.apply(this,arguments);try{const T=ET[ty===undefined?0:ty],e=en[en.length-1];if(T&&T.r2&&e)e.r2=T.r2;if(ty===4&&e)heliStart(e)}catch(x){}};
+
+/* ---------- Bodenziele ---------- */
+const NEW=[],CV=[],BASEP=[];
+const bx=(p,w,h,d,col,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(col));o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;p.add(o);return o};
+const cy=(p,rt,rb,h,col,x,y,z,seg=12)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),M(col));o.position.set(x,y,z);o.castShadow=true;p.add(o);return o};
+const wheel=(p,x,y,z,r=1.1)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.9,12).rotateZ(P2),M(0x1b1d1f));o.position.set(x,y,z);p.add(o);return o};
+
+function terr(r,hf,col,n){const ge=new THREE.PlaneGeometry(r*3,r*3,n,n).rotateX(-P2),p=ge.attributes.position,cs=[];
+ for(let i=0;i<p.count;i++){const h=hf(p.getX(i),p.getZ(i));p.setY(i,h);const c=new THREE.Color(col(h)).multiplyScalar(.9+R()*.2);cs.push(c.r,c.g,c.b)}
+ ge.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));ge.computeVertexNormals();
+ const m=new THREE.Mesh(ge,M(0xffffff,{vertexColors:true}));m.receiveShadow=m.castShadow=true;return m}
+function plHf(r,ph){return(x,z)=>{const a=Math.atan2(z,x),l=1-Math.hypot(x,z)/r*(1+.08*Math.sin(3*a+ph)+.05*Math.sin(5*a+ph*2));return l<=0?l*30:6*sm(l/.22)}}
+function bigIsland(cx,cz,r,col){const hf=plHf(r,R()*6),g=new THREE.Group();g.add(terr(r,hf,col,64),shallow(r));g.userData={hf,r};g.position.set(cx,0,cz);scene.add(g);wrap.push(g);NEW.push(g);return g}
+function miniIsland(Q){const hf=(x,z)=>{const l=1-Math.hypot(x,z)/Q*(1+.12*Math.sin(Math.atan2(z,x)*4));return l<=0?l*30:6*sm(l/.3)+.5*Math.sin(x*.3)*sm(l/.4)};
+ const g=new THREE.Group();g.add(terr(Q,hf,h=>h<1?0xd8c68a:h<4.5?0x7a756a:0x6b7048,30),shallow(Q));return g}
+
+function tgt(m,x,y,z,hp,o){o=o||{};m.position.set(x,y,z);scene.add(m);const mk=document.createElement('div');mk.className='mk gt';$('hud').appendChild(mk);
+ const H=hp*D.h,e=Object.assign({g:1,big:false,m,hp:H,hp0:H,spin:null,r2:1600,rng:0,cd:1+R(),mk,dead:0},o);en.push(e);NEW.push(m);return e}
+
+function radarModel(){const g=new THREE.Group(),spin=new THREE.Group(),olive=0x4d5444;
+ bx(g,5.2,1.2,15,olive,0,1.6,0);bx(g,4.6,2.6,4,olive,0,3.5,6);bx(g,4.2,1,.2,0x182026,0,4.1,8.05);
+ for(const z of[-5,.5,6])for(const s of[-1,1])wheel(g,s*2.7,1.1,z);
+ bx(g,4.4,3.6,8,0x6b735c,0,4.6,-3);cy(g,.5,.5,4,0x555a60,0,8.4,-3,8);
+ spin.position.set(0,10.8,-3);g.add(spin);bx(spin,13,5,.6,0x9aa39a,0,0,0);bx(spin,13.4,.4,.8,0x30363a,0,2.7,0);bx(spin,.8,.8,.8,0x30363a,0,0,-.6);
+ bx(g,3,2,5,olive,0,1.8,-12);for(const s of[-1,1])wheel(g,s*1.6,1.0,-12.5,.9);
+ for(const s of[-1,1])for(const z of[-6.5,0])bx(g,.7,.5,.7,0x333333,s*3.2,.5,z);
+ return{g,spin}}
+function tankModel(col){const g=new THREE.Group();
+ bx(g,4.2,1.5,8.6,col,0,1.5,0);bx(g,3.6,.6,5.6,col,0,2.5,-.3);
+ for(const s of[-1,1]){bx(g,1,1.7,9.4,0x2a2d2b,s*2.4,1.05,0);for(const z of[-3.6,-1.2,1.2,3.6])cy(g,.5,.5,.3,0x444847,s*2.9,1.0,z,8).rotation.z=P2}
+ const t=new THREE.Group();t.position.set(0,3.1,-.4);g.add(t);bx(t,3,1.2,3.4,col,0,0,0);cy(t,.17,.17,5,0x2b2e2c,0,.1,3.9,8).rotation.x=P2;cy(t,.55,.55,.3,0x2b2e2c,.8,.8,-.4,8);
+ g.scale.setScalar(1.6);return g}
+function truckModel(col){const g=new THREE.Group();
+ bx(g,3.4,.9,9.5,0x3a3d38,0,1.5,0);bx(g,3.4,2.4,2.6,col,0,3.0,3.6);bx(g,3,1,.15,0x182026,0,3.5,4.95);bx(g,3.6,2.8,6,col,0,3.2,-1.6);
+ for(const z of[-4,.5,4])for(const s of[-1,1])wheel(g,s*1.8,1.0,z,1.0);g.scale.setScalar(1.5);return g}
+function aaModel(col){const g=new THREE.Group();
+ bx(g,3.4,.9,9,0x3a3d38,0,1.5,0);bx(g,3.4,2.4,2.6,col,0,3.0,3.4);for(const z of[-3.5,0,3.5])for(const s of[-1,1])wheel(g,s*1.8,1.0,z,1.0);
+ const t=new THREE.Group();t.position.set(0,3,-1.5);g.add(t);bx(t,3,1.4,3.4,col,0,0,0);
+ for(const s of[-1,1])cy(t,.2,.2,4.4,0x2b2e2c,s*.8,1.7,.6,8).rotation.x=P2-.7;
+ g.scale.setScalar(1.6);return g}
+function samModel(col){const g=new THREE.Group();
+ bx(g,3.6,.9,10,0x3a3d38,0,1.5,0);bx(g,3.6,2.4,2.6,col,0,3.0,4);for(const z of[-4,0,4])for(const s of[-1,1])wheel(g,s*1.9,1.0,z,1.0);
+ const t=new THREE.Group();t.position.set(0,2.4,-1);g.add(t);bx(t,3,.6,6,0x30363a,0,0,0);
+ for(const s of[-1,1])for(const x of[.55,1.2]){cy(t,.3,.3,6,0x8d9488,s*x,1.2,0,8).rotation.x=P2-.9}
+ g.scale.setScalar(1.5);return g}
+function hangarModel(){const g=new THREE.Group();
+ bx(g,38,6,26,0x8a8f8c,0,3,0);
+ const r=new THREE.Mesh(new THREE.CylinderGeometry(13,13,38,16,1,false,0,Math.PI).rotateZ(P2),M(0x6f7a6a));r.position.set(0,6,0);r.castShadow=true;g.add(r);
+ bx(g,24,9,.6,0x2b2f33,0,4.5,13.1);bx(g,12,.5,.6,0xd9c25a,0,9.4,13.2);return g}
+function towerModel(){const g=new THREE.Group();
+ bx(g,8,22,8,0x9a9d98,0,11,0);bx(g,13,5,13,0x808a96,0,24.5,0);bx(g,13.4,2,13.4,0x16202c,0,24.8,0);bx(g,14,.8,14,0x6a6f73,0,27.4,0);cy(g,.3,.4,10,0x444444,0,32,0,6);
+ const b=new THREE.Mesh(new THREE.SphereGeometry(.8,8,6),new THREE.MeshBasicMaterial({color:0xff2222}));b.position.y=37.2;g.add(b);return g}
+function hqModel(){const g=new THREE.Group();
+ bx(g,32,9,20,0x8d8f8c,0,4.5,0);bx(g,34,1.2,22,0x74777a,0,9.6,0);bx(g,14,3,10,0x9a9c99,0,11.5,0);
+ cy(g,.3,.4,12,0x444444,10,16,5,6);bx(g,10,5,.4,0x1b1f22,0,3,10.1);return g}
+function fuelModel(){const g=new THREE.Group();
+ cy(g,10,10,13,0xb8bcb4,0,6.5,0,18);const d=new THREE.Mesh(new THREE.SphereGeometry(10,16,8,0,6.283,0,1.571),M(0x9aa098));d.position.y=13;g.add(d);
+ cy(g,10.1,10.1,2.2,0xc23b3b,0,5,0,18);return g}
+function truck2(col){const g=truckModel(col);return g}
+
+/* Mobile Radarstation auf kleiner Insel */
+function mkRadar(x,z){const mi=miniIsland(34),rm=radarModel();rm.g.position.y=6.2;mi.add(rm.g);
+ return tgt(mi,x,0,z,160,{spin:rm.spin,r2:2200,rng:0})}
+
+/* Ringstraße mit Panzerkonvoi auf einer großen Insel */
+function mkConvoy(isl,cx,cz,r,dir){const rho=r*.4,road=new THREE.Mesh(new THREE.RingGeometry(rho-5,rho+5,72).rotateX(-P2),M(0x3c3f3a));road.position.y=6.2;isl.add(road);
+ const cols=[0x56604a,0x56604a,0x6a6f58,0x4d5444,0x56604a,0x6a6f58],kinds=['t','t','k','a','t','k'],v=[],c={cx,cz,rho,w:dir*(9/rho),f:R()*6.28,v,dir};
+ kinds.forEach((k,i)=>{const mm=k==='t'?tankModel(cols[i]):k==='k'?truckModel(cols[i]):aaModel(cols[i]);
+  const e=tgt(mm,cx,6,cz,k==='t'?150:k==='a'?110:90,{r2:k==='t'?1100:900,rng:k==='t'?700:k==='a'?1000:0,cz:14,cy:12,cvo:i*30});v.push(e)});
+ CV.push(c);placeConvoy(c)}
+function placeConvoy(c){for(const e of c.v){if(e.dead)continue;const f=c.f-c.dir*e.cvo/c.rho;e.m.position.set(c.cx+c.rho*Math.cos(f),6,c.cz+c.rho*Math.sin(f));e.m.rotation.y=Math.atan2(-Math.sin(f)*c.dir,Math.cos(f)*c.dir)}}
+let lt=performance.now();
+(function tk(){requestAnimationFrame(tk);const n=performance.now(),dt=Math.min(.1,(n-lt)/1000);lt=n;try{if(state!=='play')return;for(const c of CV){c.f+=c.w*dt;placeConvoy(c)}}catch(e){}})();
+
+/* Große Militärbasis mit Start- und Landebahn – alles sind Ziele */
+function runwayTex(){const c=document.createElement('canvas');c.width=160;c.height=2048;const x=c.getContext('2d');
+ x.fillStyle='#34373b';x.fillRect(0,0,160,2048);x.fillStyle='#e6e6e6';x.fillRect(6,0,5,2048);x.fillRect(149,0,5,2048);
+ for(let i=300;i<1750;i+=70)x.fillRect(76,i,8,38);
+ for(const y0 of[20,1960])for(let j=0;j<8;j++)x.fillRect(22+j*15,y0,9,52);
+ x.font='bold 56px monospace';x.textAlign='center';x.save();x.translate(80,180);x.fillText('09',0,0);x.restore();x.save();x.translate(80,1890);x.fillText('27',0,0);x.restore();
+ const t=new THREE.CanvasTexture(c);t.flipY=false;t.needsUpdate=true;return t}
+function mkGrossbasis(cx,cz){const r=520,isl=bigIsland(cx,cz,r,h=>h<1.5?0xd8c68a:h<4.8?0xb7a978:0x7b8460);
+ const rw=new THREE.Mesh(new THREE.PlaneGeometry(44,560).rotateX(-P2),new THREE.MeshLambertMaterial({map:runwayTex()}));rw.position.set(-120,6.25,0);isl.add(rw);
+ const sl=(w,d,x,z,col)=>{const o=new THREE.Mesh(new THREE.PlaneGeometry(w,d).rotateX(-P2),M(col));o.position.set(x,6.2,z);isl.add(o)};
+ sl(260,16,10,0,0x5a5d60);sl(210,270,125,0,0x8a8d8f);
+ {const pt=padTex();for(const z of[-40,40]){BASEP.push({x:cx+170,z:cz+z});const o=new THREE.Mesh(new THREE.PlaneGeometry(26,26).rotateX(-P2),new THREE.MeshBasicMaterial({map:pt,transparent:true}));o.position.set(170,6.35,z);isl.add(o)}}
+ const T=(m,x,z,hp,o,ry)=>{if(ry!==undefined)m.rotation.y=ry;return tgt(m,cx+x,6,cz+z,hp,o)},W=-P2;
+ for(const z of[-110,0,110])T(hangarModel(),235,z,260,{r2:3600,cz:42,cy:24},W);
+ T(towerModel(),-20,-150,180,{r2:2500,cz:20,cy:40});T(hqModel(),120,-195,220,{r2:2800,cz:36,cy:20},W);
+ for(const x of[200,165,130])T(fuelModel(),x,230,150,{r2:2000,cz:16,cy:22});
+ for(const[x,z]of[[-260,150],[230,-220]])T(samModel(0x56604a),x,z,150,{r2:1800,rng:1000,cz:16,cy:14},R()*6);
+ for(const[x,z]of[[-190,260],[-190,-260]])T(aaModel(0x56604a),x,z,120,{r2:1500,rng:800,cz:14,cy:12},R()*6);
+ {const rm=radarModel();rm.g.rotation.y=.8;T(rm.g,60,230,160,{spin:rm.spin,r2:2200,cz:18,cy:24})}
+ [['f16',0x7d8b99,0x2a3342],['mig29',0x6f7f8f,0x333333],['f18',0x636e7a,0xe0a030],['f16',0x7d8b99,0x2a3342]].forEach((q,i)=>{
+  try{const j=mkJet2(q[0],q[1],q[2],null);if(j.glow)j.glow.visible=false;T(j,95,-75+i*55,110,{r2:1500,cz:14,cy:10},W)}catch(e){console.warn('Basisflugzeug',e)}});
+ try{const h=mkHerc(0x59624d,0x2b3028,[.7,.7,.7]);h.glow.visible=false;T(h,160,150,420,{r2:2600,cz:26,cy:14},W)}catch(e){}
+ for(const[x,z]of[[40,-110],[60,70],[10,125]])T(truck2(0x6a6f58),x,z,50,{r2:900,cz:10,cy:10},R()*6)}
+
+/* ---------- Apache startet von Träger / Kampfschiff / Basis (sonst Luftstart) ---------- */
+function padTex(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#4a4e52';x.beginPath();x.arc(64,64,62,0,7);x.fill();x.strokeStyle='#e8d34a';x.lineWidth=6;x.beginPath();x.arc(64,64,54,0,7);x.stroke();x.fillStyle='#e8d34a';x.font='bold 72px monospace';x.textAlign='center';x.textBaseline='middle';x.fillText('H',64,68);const t=new THREE.CanvasTexture(c);t.flipY=false;return t}
+function heliSrc(){const s=[];for(const x of en){if(x.dead||!x.g||!x.m)continue;if(x.big)s.push({m:x.m,l:V(-1,14.2,90),e:x,n:'Flugzeugträger'});else if(x.ship)s.push({m:x.m,l:V(0,10.8,-6.8),e:x,n:'Kampfschiff'})}
+ for(const p of BASEP)s.push({w:V(p.x,7.4,p.z),n:'Militärbasis'});return s}
+function tkBase(s){if(s.m){s.m.updateMatrixWorld(true);return s.m.localToWorld(s.l.clone())}return s.w.clone()}
+function heliStart(e){const S=heliSrc();if(!S.length)return;const s=S[R()*S.length|0];e.tk={s,t:0};const b=tkBase(s);e.m.position.copy(b);chat('Apache startet von '+(s.n==='Militärbasis'?'der Militärbasis':s.n==='Kampfschiff'?'einem Kampfschiff':'einem Flugzeugträger')+'!')}
+let lt2=performance.now();
+(function tt(){requestAnimationFrame(tt);const n=performance.now(),dt=Math.min(.1,(n-lt2)/1000);lt2=n;try{if(state!=='play')return;
+ for(const e of en){const k=e.tk;if(!k||e.dead)continue;if(k.s.e&&k.s.e.dead){e.tk=null;continue}
+  k.t+=dt;const b=tkBase(k.s),lift=45*sm((k.t-1)/4);e.m.position.set(b.x,b.y+lift,b.z);e.m.rotation.set(0,Math.atan2(P.position.x-b.x,P.position.z-b.z),0);
+  e.cd=Math.max(e.cd,1.5);e.mc=Math.max(e.mc,4);if(k.t>=5)e.tk=null}}catch(x){}})();
+
+/* ---------- Level-Aufbau ---------- */
+const _bl2=buildLevel;buildLevel=function(){_bl2();
+ try{for(const o of NEW){scene.remove(o);const i=wrap.indexOf(o);if(i>=0)wrap.splice(i,1)}NEW.length=0;CV.length=0;BASEP.length=0;
+  if(MP)return;const L=LV[lv];
+  for(let i=0;i<(L.rad||0);i++)mkRadar((R()-.5)*2200,900+R()*1700);
+  if(L.base){mkGrossbasis(0,3300);chat('Große Militärbasis voraus – alles hier ist ein Ziel!')}
+  const IP=[[250,3500],[-900,3350],[1150,3650]];
+  for(let i=0;i<(L.isl||0)&&i<IP.length;i++){const[x,z]=IP[i],isl=bigIsland(x,z,360,h=>h<1.5?0xd8c68a:h<4.8?0xb7a978:0x65723f);mkConvoy(isl,x,z,360,i%2?-1:1)}
+ }catch(e){console.warn('Neue Ziele',e)}};
 })();
 </script>
 </body></html>
