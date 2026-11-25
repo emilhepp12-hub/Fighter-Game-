@@ -873,6 +873,12 @@
    "rotY": 0,
    "length": 20,
    "ultraOnly": true
+  },
+  "j20": {
+   "file": "j20.glb",
+   "rotY": 0,
+   "length": 19,
+   "ultraOnly": true
   }
  }
 }
