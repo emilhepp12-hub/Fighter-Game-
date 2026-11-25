@@ -530,7 +530,7 @@ function update(dt){
  if(time-lastHit>3)hull=Math.min(100,hull+6*dt);if(hull<35&&R()<.5)puff(P.position.clone().add(V(0,0,-6).applyQuaternion(P.quaternion)));mT+=dt;if(mT>12){mT=0;missiles=Math.min(12,missiles+1);flares=Math.min(8,flares+1)}
  loopCd-=dt;spCd=Math.max(0,spCd-dt);gunCd-=dt;{const fw=(k('Space')||K.fire)&&!SJ_BM(),mgo=window.SJ_MG?SJ_MG(fw):false;if(fw&&gunCd<=0){gunCd=.045;shoot(P,true,750);if(!mgo)sfx(320,.05,'square',.025,-150)}}
  // lock
- lock=null;let bd=.93;for(const e of (window.MPLT?[window.MPLT]:en)){const d=e.m.position.clone().sub(P.position),l=d.length();const dot=d.normalize().dot(fwd);if(dot>bd&&l<2000){bd=dot;lock=e}}
+ lock=null;let bd=.93;const lf=(window.GN&&window.GN.on&&window.GNDIR)?GNDIR():fwd;for(const e of (window.MPLT?[window.MPLT]:en)){const d=e.m.position.clone().sub(P.position),l=d.length();const dot=d.normalize().dot(lf);if(dot>bd&&l<2000){bd=dot;lock=e}}
  // enemies
  for(const e of en){if(e.g){if(e.spin)e.spin.rotation.y+=dt*1.5;if(e.big)e.m.translateZ(7*dt);if(e.hp<e.hp0*.5&&R()<.3)fx(e.m.position.clone().add(V((R()-.5)*20,e.big?30:22,(R()-.5)*20)),V(0,18,0),1.6,6,smk);e.cd-=dt;if(e.m.position.distanceTo(P.position)<e.rng&&e.cd<=0&&loopP<0){gshoot(e);e.cd=(e.big?.45:1.1+R()*.6)/D.f}continue}
   const to=P.position.clone().sub(e.m.position),dist=to.length();e.t-=dt;
@@ -2063,7 +2063,7 @@ function gnStart(){
   document.body.classList.add('gn');ov.style.display='block';
   P.visible=false;
   banner('BORDKANONEN');
-  chat('Bordkanonen feuerbereit! FEUER = 25-mm-Gatling · BOMBE (B) = 105-mm-Haubitze. Zielen mit Joystick / WASD oder rechts wischen.');
+  chat('Bordkanonen feuerbereit! FEUER = 25-mm-Gatling · RAKETE (X) = Lenkrakete mit Zielerfassung · BOMBE (B) = 105-mm-Haubitze. Zielen mit Joystick / WASD oder rechts wischen.');
 }
 function gnEnd(msg){
   if(!GN.on)return;
@@ -2102,7 +2102,14 @@ function gnHow(){
   shake=Math.max(shake,.35);sfx(80,.6,'sawtooth',.14,-50);
 }
 const _bomb=bomb;bomb=function(){if(GN.on){gnHow();return}return _bomb.apply(this,arguments)};
-const _launch=launch;launch=function(){if(GN.on){gnHow();return}return _launch.apply(this,arguments)};
+window.GNDIR=()=>gnDir(V());
+const _launch=launch;launch=function(){
+  if(GN.on){
+    const n=mis.length;_launch.apply(this,arguments);
+    if(mis.length>n){const q=mis[mis.length-1];q.d=gnDir(V());q.m.position.copy(gnPos(V())).addScaledVector(q.d,6);q.m.quaternion.setFromUnitVectors(Zv,q.d);q.t=lock;q.sp=spd+60}
+    return;
+  }
+  return _launch.apply(this,arguments)};
 
 function gnGat(){
   const d=gnDir(V()),p=gnPos(V()),fw=V(0,0,1).applyQuaternion(P.quaternion);
@@ -2176,7 +2183,7 @@ let lg=performance.now();
     gnShells(dt);
     gnT.textContent='BORDKANONEN · '+GN.t.toFixed(1)+' s';
     gnB.style.width=(GN.t/GNMAX*100).toFixed(1)+'%';
-    gnH.textContent='FEUER: 25 mm GATLING · BOMBE (B): 105 mm HAUBITZE '+(GN.hw>0?'lädt '+GN.hw.toFixed(1)+' s':'BEREIT');
+    gnH.textContent='FEUER: GATLING · RAKETE (X): LENKRAKETE · BOMBE (B): HAUBITZE '+(GN.hw>0?'lädt '+GN.hw.toFixed(1)+' s':'BEREIT');
   }catch(x){}
 })();
 })();
