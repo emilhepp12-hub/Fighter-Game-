@@ -1210,14 +1210,14 @@ function gearPose(q){const e=q.k*q.k*(3-2*q.k);
 let gu=1; /* Wunsch des Spielers: 1 = eingefahren (Flug), 0 = ausgefahren */
 window.SJ_ST=0;window.SJ_STC=0;window.SJ_HOV=0;window.SJ_FV=0;
 window.SJ_F35=function(){try{return PL[selP].id==='f35'}catch(e){return false}};
-window.SJ_HOVER=function(){if(state!=='play'||!P||!SJ_F35())return;SJ_HOV=SJ_HOV?0:1;if(SJ_HOV)SJ_FV=spd;chat(SJ_HOV?'SCHWEBEN AN – Triebwerk zeigt nach unten (H = aus)':'SCHWEBEN AUS – Vorwärtsflug')};
+window.SJ_HOVER=function(){if(state!=='play'||!P||!SJ_F35())return;SJ_HOV=SJ_HOV?0:1;window.HM=0;if(SJ_HOV)SJ_FV=spd;chat(SJ_HOV?'SCHWEBEN AN – Triebwerk zeigt nach unten (H = aus)':'SCHWEBEN AUS – Vorwärtsflug')};
 window.SJ_FMOVE=function(dt,boost){
- SJ_FV+=(0-SJ_FV)*Math.min(1,1.2*dt);
+ const mx=50*sK,hm=window.HM||0,tg=hm>0?mx*(boost?1.5:1):hm<0?-mx*.5:0;SJ_FV+=(tg-SJ_FV)*Math.min(1,1.3*dt);
  P.position.addScaledVector(V(Math.sin(yaw),0,Math.cos(yaw)),SJ_FV*dt);
  if(loopP<0){P.position.y+=Math.max(-1.15,Math.min(1.15,up))*36*dt;if(!(k('KeyW','ArrowUp','KeyS','ArrowDown')||st.y))up-=up*2.2*dt}
- spd=Math.max(1,Math.abs(SJ_FV));P.rotation.x=-up*.3};
+ spd=Math.max(1,Math.abs(SJ_FV));{const tt=SJ_FV>=0?Math.min(.5,SJ_FV/mx*.34):Math.max(-.26,SJ_FV/(mx*.5)*.24);P.rotation.x=-up*.3+tt}};
 try{const _s2=startLoop;startLoop=function(){if(SJ_F35()&&SJ_HOV)return;_s2.apply(this,arguments)}}catch(e){}
-function hoverFx(){if(!P)return;let h=P.hvf;if(!h){h=P.hvf=new THREE.Group();h.fl=[];for(const[r,l,z]of[[.9,4.5,-5.2],[.8,3.5,1.6]]){const m=new THREE.Mesh(new THREE.ConeGeometry(r,l,10,1,true),new THREE.MeshBasicMaterial({color:0x66bbff,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=Math.PI;m.position.set(0,-.3-l/2,z);h.add(m);h.fl.push(m)}P.add(h)}
+function hoverFx(){if(!P)return;let h=P.hvf;if(!h&&!SJ_HOV)return;if(P.glow&&(P.hvOn||SJ_HOV>0)&&P.hvOn!==(SJ_HOV>0)){P.glow.visible=!(SJ_HOV>0);P.hvOn=SJ_HOV>0}if(!h){h=P.hvf=new THREE.Group();h.fl=[];for(const[r,l,z]of[[1.3,6,-5.2],[.8,3.5,1.6]]){const m=new THREE.Mesh(new THREE.ConeGeometry(r,l,10,1,true),new THREE.MeshBasicMaterial({color:0x66bbff,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=Math.PI;m.position.set(0,-.3-l/2,z);h.add(m);h.fl.push(m)}P.add(h)}
  h.visible=SJ_HOV>0;if(h.visible)for(const m of h.fl)m.scale.set(1+R()*.15,.85+R()*.3,1+R()*.15)}
 window.SJ_GEAR=function(){if(state!=='play'||!P)return;if(P.gear)gu=gu?0:1};
 window.SJ_STEALTH=function(){if(state!=='play'||!P||!SJ_B2())return;if(SJ_ST<=0&&SJ_STC<=0){SJ_ST=8;SJ_STC=28;chat('STEALTH AN – du bist für Raketen unsichtbar (8 s)')}else if(SJ_ST<=0)chat('Stealth lädt noch '+Math.ceil(SJ_STC)+' s')};
@@ -2218,7 +2218,7 @@ function setM(m){if(window.HM!==m){window.HM=m;try{sfx(260,.05,'square',.03,0)}c
 function pt(e){const r=T.getBoundingClientRect(),f=(e.clientY-r.top)/r.height;setM(f<.33?1:f>.67?-1:0)}
 T.onpointerdown=e=>{e.preventDefault();e.stopPropagation();T.setPointerCapture(e.pointerId);pt(e)};
 T.onpointermove=e=>{if(T.hasPointerCapture(e.pointerId)){e.preventDefault();pt(e)}};
-addEventListener('keydown',e=>{if(e.repeat||e.target.tagName==='INPUT'||!SJ_HELI())return;
+addEventListener('keydown',e=>{if(e.repeat||e.target.tagName==='INPUT'||!(SJ_HELI()||(SJ_F35()&&SJ_HOV)))return;
   if(e.code==='Digit1'||e.code==='Numpad1')setM(1);else if(e.code==='Digit2'||e.code==='Numpad2')setM(0);else if(e.code==='Digit3'||e.code==='Numpad3')setM(-1)});
 /* Heli fliegt horizontal nach Hebel, W/S steigt/sinkt, ohne Eingabe bleibt er in der Luft */
 window.SJ_HMOVE=function(dt,boost){
@@ -2234,7 +2234,7 @@ const _sl=startLoop;startLoop=function(){if(SJ_HELI())return;_sl()};
 /* Neustart: Heli startet im Schwebeflug */
 const _rs=reset;reset=function(){window.HM=0;window.HV=0;draw();_rs()};
 /* Beim Heli den Hebel statt des Schubhebels zeigen */
-setInterval(()=>{const h=SJ_HELI();HVE.style.display=h?'flex':'none';TH.style.display=h?'none':'flex'},120);
+setInterval(()=>{const h=SJ_HELI()||(SJ_F35()&&SJ_HOV>0);if(!h)window.HM=window.HM&&SJ_HELI()?window.HM:0;draw();HVE.style.display=h?'flex':'none';TH.style.display=h?'none':'flex'},120);
 draw();
 })();
 </script>
