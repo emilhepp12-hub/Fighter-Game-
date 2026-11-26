@@ -879,6 +879,12 @@
    "rotY": 0,
    "length": 19,
    "ultraOnly": true
+  },
+  "b17": {
+   "file": "b17.glb?v=1",
+   "rotY": 90,
+   "length": 24,
+   "ultraOnly": true
   }
  }
 }
