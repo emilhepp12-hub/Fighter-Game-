@@ -676,7 +676,10 @@ const PL=[{id:'mig21',n:'MIG-21',d:'FRÜHER ABFANGJÄGER',c:0x9aa7b3,a:0xc23b3b,
 {id:'b2',n:'B-2 SPIRIT',d:'TARNKAPPEN-BOMBER · NUR BOMBEN',c:0x23262c,a:0x3a3f48,hp:600,gun:0,mis:0,turn:60,spd:105,$:12000,pt:['NUR BOMBEN: 24 Stück, Salven à 4, Nachladen 6 s','G = STEALTH (8 s): kein Raketenschuss auf dich, Raketen verlieren dich']},
 {id:'gespenst',n:'GESPENST',d:'TARNKAPPENJÄGER',c:0x1b1d23,a:0xe23f64,hp:320,gun:40,mis:195,turn:104,spd:120,$:7500,sp:'swarm',em:.7,pt:['Gegner feuern 30% weniger Raketen','SPEZIAL: SCHWARM ×6 (E)']},
 {id:'phantom',n:'PHANTOM',d:'TARNKAPPEN-ABFANGJÄGER',c:0x1a1b22,a:0xa070ff,hp:340,gun:44,mis:260,turn:108,spd:140,$:9000,sp:'long',hom:2,pt:['Raketen schalten in 0,5 s auf das Ziel auf','SPEZIAL: WEITRAKETE ×6 (E)']},
-{id:'j20',n:'J-20 MIGHTY DRAGON',d:'CHENGDU · TARNKAPPEN-SCHWERJÄGER · NUR ULTRA-MODELL',c:0x5a6672,a:0x2a3038,hp:430,gun:58,mis:260,turn:104,spd:135,$:9200,em:.85,pt:['Gegner feuern 15% weniger Raketen']}];
+{id:'j20',n:'J-20 MIGHTY DRAGON',d:'CHENGDU · TARNKAPPEN-SCHWERJÄGER · NUR ULTRA-MODELL',c:0x5a6672,a:0x2a3038,hp:430,gun:58,mis:260,turn:104,spd:135,$:9200,em:.85,pt:['Gegner feuern 15% weniger Raketen']},
+{id:'rafale',n:'DASSAULT RAFALE',d:'FRANZÖSISCHER OMNIROLE-JÄGER · NUR ULTRA-MODELL',c:0x8c96a1,a:0x1d4f91,hp:340,gun:48,mis:215,turn:104,spd:118,$:5900},
+{id:'f15e',n:'F-15E STRIKE EAGLE',d:'BOEING · ALLWETTER-JAGDBOMBER · NUR ULTRA-MODELL',c:0x7d8794,a:0x2a3038,hp:440,gun:60,mis:245,turn:92,spd:122,$:8800},
+{id:'su35',n:'SU-35 FLANKER-E',d:'SUKHOI · SCHUBVEKTOR-SUPERMANÖVRIERER · NUR ULTRA-MODELL',c:0x8a96a3,a:0x2d3a4a,hp:410,gun:56,mis:240,turn:112,spd:125,$:9300}];
 function sel(i){selP=(i+PL.length)%PL.length;const p=PL[selP],o=P;scene.remove(o);P=mkJet2(p.id,p.c,p.a,p.s);P.sp=p.sp;PS={em:p.em||1,hom:p.hom||1};P.rotation.order='YXZ';P.eye=eyeFor(p);ckSet(p.id);P.position.copy(o.position);P.visible=state!=='over';scene.add(P);const u=ug(p),E={hp:Math.round(p.hp*(1+.15*u[1])),gun:Math.round(p.gun*(1+.12*u[2])),mis:Math.round(p.mis*(1+.12*u[3])),turn:p.turn,spd:Math.round(p.spd*(1+.06*u[0]))};dmgK=150/E.hp;gunD=E.gun*12/31;mD=70*E.mis/130;tK=E.turn/85;sK=.8+E.spd/425;
  $('pn').textContent=p.n;renderUp();$('pc').textContent=p.d+(OWN.includes(p.n)?' · IM BESITZ':' · '+p.$+' MÜNZEN');$('pi').textContent='FLUGZEUG '+String(selP+1).padStart(2,'0')+' / '+String(PL.length).padStart(2,'0');
  $('ps').innerHTML=[['PANZER',E.hp,800],['KANONE',E.gun,100],['RAKETE',E.mis,400],['WENDIGKEIT',E.turn,130],['TEMPO',E.spd,180]].map(([a,v,m])=>`<div class="st"><span>${a}</span><u><b style="width:${Math.min(100,v/m*100)}%"></b></u><em>${v}</em></div>`).join('')+(p.pt?p.pt.map((t,i)=>'<div class="px">'+(i?'◆ ':'★ ')+t+'</div>').join(''):'')}
@@ -2668,7 +2671,7 @@ function KOL(dt){
   if(p.y<w)p.y=Math.min(w,p.y+90*dt)}}
 const _up=update;update=function(dt){_up(dt);try{KOL(dt)}catch(e){console.warn('Kollision',e)}};
 /* Cockpit-Augenpunkt der beiden neuen Jets */
-const _ey=eyeFor;eyeFor=function(p){if(p.id==='gripen')return V(0,.2,2.95);if(p.id==='harrier')return V(0,.64,3.7);return _ey(p)};
+const _ey=eyeFor;eyeFor=function(p){if(p.id==='gripen')return V(0,.2,2.95);if(p.id==='harrier')return V(0,.64,3.7);if(p.id==='rafale')return V(0,-.46,3.05);if(p.id==='f15e')return V(0,.22,4.8);if(p.id==='su35')return V(0,.12,5.1);return _ey(p)};
 })();
 </script>
 </body></html>
