@@ -415,7 +415,7 @@ function crash(w){if(state!=='play')return;if(MP&&MP.go&&MP.inv>0)return;boom(P.
 function hurt(d){d*=dmgK*D.d;lastHit=time;hull-=d;shake=.7;fl=.55;sfx(90,.2,'sawtooth',.1,-40);if(hull<=0&&state==='play')die()}
 function die(){state='over';boom(P.position,2.6);P.visible=false;if(score>hi){hi=score;try{localStorage.setItem('sj_hi'+hiLv,hi)}catch(e){}}$('hi').textContent=hi;
  $('msg').textContent='ABGESCHOSSEN! Punkte: '+score+' · Welle '+wave;$('msg').textContent+=' · +'+gain(score)+' Münzen';sel(selP);$('go').textContent='NOCHMAL';$('ov').style.display='flex'}
-function reset(){{const _L=LV[lv];if(_L&&_L.bo&&!MP&&!SJ_BM()){const bi=PL.findIndex(p=>p.id==='b2');if(bi>=0&&OWN.includes(PL[bi].n))sel(bi);else{$('msg').textContent='Dieses Level ist NUR mit einem Bomber spielbar – du brauchst den B-2 SPIRIT ('+(bi>=0?PL[bi].$:'?')+' Münzen)!';return}}}if(!OWN.includes(PL[selP].n)){$('msg').textContent='Dieses Flugzeug musst du erst kaufen!';return}clearTimeout(timer);[...en].forEach(e=>{scene.remove(e.m);e.mk.remove()});[...bul,...mis,...parts,...em,...fl2,...bb,...wr,...pu].forEach(o=>scene.remove(o.m));en=[];bb=[];wr=[];pu=[];bul=[];mis=[];parts=[];em=[];fl2=[];
+function reset(){{const _L=LV[lv];}if(!OWN.includes(PL[selP].n)){$('msg').textContent='Dieses Flugzeug musst du erst kaufen!';return}clearTimeout(timer);[...en].forEach(e=>{scene.remove(e.m);e.mk.remove()});[...bul,...mis,...parts,...em,...fl2,...bb,...wr,...pu].forEach(o=>scene.remove(o.m));en=[];bb=[];wr=[];pu=[];bul=[];mis=[];parts=[];em=[];fl2=[];
  P.visible=true;P.position.set(0,250,0);yaw=roll=up=0;spd=140;hull=100;missiles=SJ_BM()?0:6;bombs=SJ_BM()?SJ_BC().max:8;window.SJ_BRL=0;window.SJ_HOV=0;window.SJ_ST=0;window.SJ_STC=0;energy=100;score=0;wave=0;kills=0;pending=false;earn=0;flares=8;spCd=0;window.gc=0;loopP=-1;loopCd=0;state='play';$('ov').style.display='none';setSky(lv%3);hiLv=lv;try{hi=+localStorage.getItem('sj_hi'+lv)||(lv?0:+localStorage.getItem('sj_hi'))||0}catch(e){}$('hi').textContent=hi;buildLevel();if(LV[lv].bo)chat('Bomber-Einsatz: nur Boden- und Seeziele – keine Jäger!')}
 function shoot(src,own,sp){const m=new THREE.Mesh(bg,own?bmP:bmE);sideT=!sideT;const A=own&&src.a10;if(A)src.a10.gs=45;m.position.set(A?0:(sideT?2.4:-2.4),A?-.6:-.2,A?7:3).applyQuaternion(src.quaternion).add(src.position);m.quaternion.copy(src.quaternion);
  const v=V(0,0,1).applyQuaternion(src.quaternion);if(!own)v.add(V(R()-.5,R()-.5,R()-.5).multiplyScalar(.05));scene.add(m);bul.push({m,v:v.multiplyScalar(sp),l:1.6,own})}
@@ -595,7 +595,7 @@ const LV=[{n:'ERSTER FLUG',w:[[0,0],[0,0,1]],b:0,c:0},{n:'BUNKERJAGD',w:[[0,1]],
 {n:'FUNKSTILLE',w:[[1,2,2,4],[2,3,3,5,5,6]],b:0,c:0,rad:5,isl:1},{n:'GROSSBASIS',w:[[2,3,3,4,5],[3,3,3,3,6,6]],b:0,c:0,base:1,rad:2},{n:'INSELKRIEG',w:[[2,2,3,5,5,4],[3,3,3,6,4]],b:0,c:0,isl:3,rad:3}];
 const ET=[{id:'mig29',c:0xc23b3b,a:0x222222,h:1,s:1,t:1,sc:null,f:1},{id:'mig21',c:0xd9822b,a:0x222222,h:.6,s:1.35,t:1.1,sc:[.75,.75,.75],f:1.3},{id:'su57',c:0x8a3bc2,a:0x111111,h:2.2,s:.8,t:.7,sc:[1.5,1.2,1.4],f:.8,m:1,v:4},{id:'f22',c:0x15151a,a:0xffd400,h:5,s:1.2,t:1.4,sc:[1.1,1.1,1.1],f:1.5,m:1,v:7}];
 const DF=[{n:'LEICHT',h:.7,d:.6,f:.7,t:.8},{n:'NORMAL',h:1,d:1,f:1,t:1},{n:'SCHWER',h:1.5,d:1.5,f:1.4,t:1.2}];let lv=0,D=DF[1];
-function renderUI(){$('lv').innerHTML='<small>LEVEL</small>'+LV.map((l,i)=>`<button class='${i==lv?'on':''}' data-i='${i}'${l.bo?" title='Nur Bomber (B-2)'":''}>${i+1}${l.bo?'✈':''}</button>`).join('')+`<span>${LV[lv].n}${LV[lv].bo?' · NUR BOMBER (B-2 / REAPER)':''}</span>`;$('df').innerHTML='<small>SCHWIERIGKEIT</small>'+DF.map((d,i)=>`<button class='${DF[i]===D?'on':''}' data-j='${i}'>${d.n}</button>`).join('')}
+function renderUI(){$('lv').innerHTML='<small>LEVEL</small>'+LV.map((l,i)=>`<button class='${i==lv?'on':''}' data-i='${i}'${l.bo?" title='Bomber empfohlen (B-2)'":''}>${i+1}${l.bo?'✈':''}</button>`).join('')+`<span>${LV[lv].n}${LV[lv].bo?' · BOMBER EMPFOHLEN (B-2 / REAPER)':''}</span>`;$('df').innerHTML='<small>SCHWIERIGKEIT</small>'+DF.map((d,i)=>`<button class='${DF[i]===D?'on':''}' data-j='${i}'>${d.n}</button>`).join('')}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.i!==undefined){lv=+b.dataset.i;renderUI()}if(b.dataset.j!==undefined){D=DF[+b.dataset.j];renderUI()}});
 function win(){state='over';if(score>hi){hi=score;try{localStorage.setItem('sj_hi'+hiLv,hi)}catch(e){}}$('hi').textContent=hi;$('msg').textContent='MISSION ERFÜLLT! Punkte: '+score;$('msg').textContent+=' · +'+gain(score)+' Münzen';if(lv<LV.length-1)lv++;sel(selP);renderUI();$('go').textContent='WEITER';$('ov').style.display='flex'}
 let coins=0,UPG={},OWN=['MIG-21'],INF=false,NRM=null;try{const s=JSON.parse(localStorage.getItem('sj_sv')||'{}');coins=s.c||0;UPG=s.u||{};OWN=s.o||[];if(!OWN.includes('MIG-21'))OWN.push('MIG-21');NRM={c:coins,u:UPG,o:OWN};if(s.i){INF=true;coins=Infinity;UPG=s.x&&s.x.u?s.x.u:JSON.parse(JSON.stringify(UPG));OWN=s.x&&s.x.o?s.x.o:OWN.slice();if(!OWN.includes('MIG-21'))OWN.push('MIG-21')}}catch(e){}
@@ -1945,6 +1945,208 @@ const _bl2=buildLevel;buildLevel=function(){_bl2();
   const IP=[[250,3500],[-900,3350],[1150,3650]];
   for(let i=0;i<(L.isl||0)&&i<IP.length;i++){const[x,z]=IP[i],isl=bigIsland(x,z,360,h=>h<1.5?0xd8c68a:h<4.8?0xb7a978:0x65723f);mkConvoy(isl,x,z,360,i%2?-1:1)}
  }catch(e){console.warn('Neue Ziele',e)}};
+/* ====================================================================
+   LEVEL: FESTUNG ÜBER DER BASIS
+   Du startest von DEINER Militärbasis. Eine B-17 Flying Fortress (mit Jagdschutz)
+   greift die Basis an. Basis zerbombt = verloren. Bomber abgeschossen = gewonnen.
+   ==================================================================== */
+(function(){
+const FT=window.SJ_FT={on:false,lost:0,done:0,over:0,safe:0,bld:[],bombs:[],fires:[],esc:[],b:null,fall:null,T:0,tk:0,rel:0,sw:0,swT:0};
+ET.push({id:'b17',c:0x6b7058,a:0x2b3028,h:1,s:1,t:1,sc:null,f:1}); /* registriert das Modell zum Laden */
+const ALT=330,SPD=82,KEY_LOSE=.2,BDM=85,BRAD=44,SC=2.1;
+const bombG=new THREE.CylinderGeometry(.55,.55,3.2,8).rotateX(Math.PI/2),bombM=new THREE.MeshLambertMaterial({color:0x2d3033});
+/* Bordkanonen der B-17: Position (Modelleinheiten), Schussachse, Feuerbogen */
+const TUR=[[0,-.6,11.5,0,0,1],[0,-1.7,9.5,0,-.3,1],[0,2.4,4.5,0,1,0],[0,-2.3,2.2,0,-1,0],[-2.2,.2,-3.6,-1,0,-.15],[2.2,.2,-3.6,1,0,-.15],[0,2.3,-1.2,0,1,-.4],[0,.8,-11.8,0,0,-1]]
+ .map(t=>({p:V(t[0],t[1],t[2]),a:V(t[3],t[4],t[5]).normalize(),cd:1+R()}));
+
+/* ---------- Oberfläche ---------- */
+const css=document.createElement('style');
+css.textContent='#ftbar{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:min(520px,72vw);z-index:30;display:none;pointer-events:none;font:700 11px monospace;letter-spacing:2px;text-shadow:0 1px 3px #000;text-align:center}'
++'#ftbar .r{margin-top:5px;color:#ffd9a0}#ftbar .b{color:#c8ffd4}#ftbar .t{background:rgba(0,0,0,.6);border:1px solid #ff8a3c;height:11px;margin-top:2px}#ftbar .b .t{border-color:#6fe08a}'
++'#ftbar .t i{display:block;height:100%;width:100%;transition:width .2s}#ftbar .f i{background:linear-gradient(90deg,#b52a16,#ff9a3c)}#ftbar .b i{background:linear-gradient(90deg,#2e8b4a,#8dffa8)}';
+document.head.appendChild(css);
+const bar=document.createElement('div');bar.id='ftbar';
+bar.innerHTML='<div class="r f"><div>B-17 FLYING FORTRESS</div><div class="t"><i id="fti1"></i></div></div><div class="r b"><div>BASIS-INTEGRITÄT <span id="ftp"></span></div><div class="t"><i id="fti2"></i></div></div>';
+document.body.appendChild(bar);
+const bi1=bar.querySelector('#fti1'),bi2=bar.querySelector('#fti2'),bpc=bar.querySelector('#ftp');
+
+/* ---------- Eigene Basis (freundlich: nicht als Ziel, nur als Gebäude mit Lebenspunkten) ---------- */
+function mkOwnBase(){
+ const cx=0,cz=0,isl=bigIsland(cx,cz,520,h=>h<1.5?0xd8c68a:h<4.8?0xb7a978:0x7b8460);
+ const rw=new THREE.Mesh(new THREE.PlaneGeometry(44,560).rotateX(-P2),new THREE.MeshLambertMaterial({map:runwayTex()}));rw.position.set(-120,6.25,0);isl.add(rw);
+ const sl=(w,d,x,z,col)=>{const o=new THREE.Mesh(new THREE.PlaneGeometry(w,d).rotateX(-P2),M(col));o.position.set(x,6.2,z);isl.add(o)};
+ sl(260,16,10,0,0x5a5d60);sl(210,270,125,0,0x8a8d8f);
+ const W=-P2;
+ const B=(m,x,z,hp,r,key,ry)=>{if(ry!==undefined)m.rotation.y=ry;m.position.set(cx+x,6,cz+z);scene.add(m);NEW.push(m);
+  const o={m,x:cx+x,z:cz+z,r,hp,hp0:hp,w:key?1:0,dead:0,sm:0};FT.bld.push(o);return o};
+ for(const z of[-110,0,110])B(hangarModel(),235,z,150,30,1,W);
+ B(towerModel(),-20,-150,110,14,1);B(hqModel(),120,-195,150,24,1,W);
+ for(const x of[200,165,130])B(fuelModel(),x,230,100,15,1);
+ for(const[x,z]of[[-260,150],[230,-220]])B(samModel(0x56604a),x,z,40,14,0,R()*6);
+ for(const[x,z]of[[-190,260],[-190,-260]])B(aaModel(0x56604a),x,z,40,12,0,R()*6);
+ [['f16',0x7d8b99,0x2a3342],['mig29',0x6f7f8f,0x333333],['f18',0x636e7a,0xe0a030],['f16',0x7d8b99,0x2a3342]].forEach((q,i)=>{
+  try{const j=mkJet2(q[0],q[1],q[2],null);if(j.glow)j.glow.visible=false;B(j,95,-75+i*55,40,12,0,W)}catch(e){console.warn('Basisflugzeug',e)}});
+ for(const[x,z]of[[40,-110],[60,70],[10,125]])B(truck2(0x6a6f58),x,z,25,8,0,R()*6);
+}
+function integrity(){let s=0,s0=0;for(const b of FT.bld)if(b.w){s+=Math.max(0,b.hp);s0+=b.hp0}return s0?s/s0:0}
+function destroyBld(b){if(b.dead)return;b.dead=1;b.hp=0;scene.remove(b.m);boom(b.m.position.clone().add(V(0,8,0)),b.w?3.4:1.8);
+ if(b.w){boom(b.m.position.clone().add(V((R()-.5)*30,14,(R()-.5)*30)),2.4,1);FT.fires.push({x:b.x,z:b.z,t:40});chat(['Ein Gebäude unserer Basis ist zerstört!','Treffer auf die Basis!','Die Basis brennt!'][R()*3|0])}}
+
+/* ---------- Bomber ---------- */
+function mkFort(){const g=mkHerc(0x6b7058,0x2b3028,[1,1,1]);if(g.glow)g.glow.visible=false;return window.SJ_SWAP?window.SJ_SWAP('b17',g):g}
+function planRun(first){
+ const alive=FT.bld.filter(b=>!b.dead&&b.w),t=alive.length?alive[R()*alive.length|0]:{x:0,z:0},b=FT.b;
+ const phi=first?Math.PI:b.phi+Math.PI+(R()-.5)*1.4,dir={x:Math.sin(phi),z:Math.cos(phi)};
+ b.phi=phi;b.dir=dir;b.A={x:t.x,z:t.z};b.S={x:t.x-dir.x*(first?2900:2400),z:t.z-dir.z*(first?2900:2400)};b.drop=0;b.warn=0;b.st=first?'ing':'turn'}
+function spawnFort(){
+ const g=mkFort();g.scale.setScalar(SC);g.rotation.order='YXZ';
+ const mk=document.createElement('div');mk.className='mk';$('hud').appendChild(mk);
+ const H=5200*D.h,e={g:1,bomber:1,m:g,hp:H,hp0:H,spin:null,r2:2000,rng:0,cd:9,mk,dead:0,big:false};
+ FT.b={hd:Math.PI,roll:0,spd:SPD,dropT:0,st:'ing',run:0,phi:Math.PI,e};
+ planRun(1);g.position.set(FT.b.S.x,ALT,FT.b.S.z);g.rotation.set(0,FT.b.hd,0);
+ scene.add(g);en.push(e);NEW.push(g);
+ /* Jagdschutz */
+ const ty=[0,0,1,0],n=3+(D.h>1.2?1:0);
+ for(let i=0;i<n;i++){spawn(ty[i]);const j=en[en.length-1];if(!j||j.g||j.bomber)continue;j.esc=i;FT.esc.push(j)}
+}
+const OFF=[V(-70,22,-55),V(70,22,-55),V(0,-35,-110),V(0,50,-140)];
+function fortDown(e){
+ e.dead=1;if(e.mk)e.mk.remove();FT.safe=1;
+ FT.fall={t:0,vy:0,roll:FT.b.roll};
+ score+=3000;earn+=2500;hmT=.6;
+ for(let i=0;i<5;i++)boom(e.m.position.clone().add(V((R()-.5)*50,(R()-.5)*14,(R()-.5)*50)),3,1);
+ banner('FESTUNG GETROFFEN!');chat('Sie geht runter! Die Basis ist gerettet – lass sie nicht entkommen!');
+}
+const _kF=kill;kill=function(e){if(e&&e.bomber){if(!e.dead)fortDown(e);return}_kF.apply(this,arguments)};
+const _wF=win;win=function(){if(FT.on&&!FT.done&&!MP&&LV[lv]&&LV[lv].fort)return;_wF.apply(this,arguments)};
+
+function dropBomb(){
+ const b=FT.b,m=new THREE.Mesh(bombG,bombM),p=b.e.m.position;
+ m.position.set(p.x,p.y-4,p.z);scene.add(m);
+ FT.bombs.push({m,v:V(Math.sin(b.hd)*b.spd+(R()-.5)*3,-3,Math.cos(b.hd)*b.spd+(R()-.5)*3)});
+ sfx(900,.6,'sine',.025,-600);
+}
+function impact(p){
+ const gh=Math.hypot(p.x,p.z)<500?6.3:.5;boom(V(p.x,gh,p.z),2.3);
+ for(const b of FT.bld){if(b.dead)continue;const d=Math.hypot(b.x-p.x,b.z-p.z)-b.r;
+  if(d<BRAD){b.hp-=BDM*(1-Math.max(0,d)/BRAD)*D.d;if(b.hp<=0)destroyBld(b)}}
+}
+function baseLost(){
+ if(FT.over||FT.safe||state!=='play')return;FT.over=1;FT.lost=1;
+ for(const b of FT.bld)if(!b.dead&&b.w)destroyBld(b);
+ shake=1;die();P.visible=true;
+ $('msg').textContent='DEINE BASIS WURDE ZERBOMBT! Punkte: '+score+' · +'+gain(score)+' Münzen';
+}
+function fortShoot(e,dt){
+ const q=e.m.quaternion,pw=e.m.position,fw=V(0,0,1).applyQuaternion(P.quaternion);let fired=0;
+ for(const t of TUR){
+  t.cd-=dt;if(t.cd>0)continue;
+  const gp=t.p.clone().multiplyScalar(SC).applyQuaternion(q).add(pw),to=P.position.clone().sub(gp),dist=to.length();
+  if(dist>950){t.cd=.25;continue}
+  const dir=to.clone().normalize(),ax=t.a.clone().applyQuaternion(q);
+  if(ax.dot(dir)<-.35){t.cd=.12;continue}
+  t.cd=(.35+R()*.3)/D.f;fired++;
+  const j=7+dist*.02;
+  for(let i=0;i<3;i++){
+   const m=new THREE.Mesh(bg,bmE);m.position.copy(gp).add(V((R()-.5)*1.2,(R()-.5)*1.2,(R()-.5)*1.2));
+   const tp=P.position.clone().addScaledVector(fw,spd*Math.min(dist/420,1.4)).add(V((R()-.5)*j,(R()-.5)*j,(R()-.5)*j)),d=tp.sub(m.position).normalize();
+   m.quaternion.setFromUnitVectors(Zv,d);scene.add(m);bul.push({m,v:d.multiplyScalar(430),l:2.4,own:false})}
+  fx(gp,V(),.09,3.2,bmP);
+ }
+ if(fired)sfx(170,.06,'square',.02,-40);
+}
+
+/* ---------- Level-Aufbau ---------- */
+const _blF=buildLevel;buildLevel=function(){_blF();
+ try{
+  FT.on=!!(LV[lv]&&LV[lv].fort)&&!MP;if(!FT.on)return;
+  Object.assign(FT,{lost:0,done:0,over:0,safe:0,T:0,tk:1,rel:0,fall:null,sw:0,swT:0});
+  for(const e of[...en]){try{scene.remove(e.m);if(e.mk)e.mk.remove()}catch(x){}}en=[];
+  for(const b of FT.bombs)scene.remove(b.m);FT.bombs=[];FT.fires=[];FT.bld=[];FT.esc=[];
+  for(const t of TUR)t.cd=2+R()*2;
+  
+  window.gc=1;
+  mkOwnBase();
+  P.position.set(-120,10.7,-255);yaw=0;roll=0;up=0;spd=55;
+  spawnFort();
+  banner('VERTEIDIGE DEINE BASIS!');
+  chat(SJ_BM()?'Achtung: Bomber haben keine Bordwaffen gegen Flugziele – ein Jäger wäre hier besser!':'Eine B-17 mit Jagdschutz greift unsere Basis an! Hoch mit dir – schieß den Bomber ab, bevor sie alles zerbombt!');
+ }catch(x){console.warn('Festung',x)}};
+
+/* ---------- Spielschleife ---------- */
+let last=performance.now();
+(function tick(){requestAnimationFrame(tick);const now=performance.now(),dt=Math.min(.1,(now-last)/1000);last=now;
+ try{
+  bar.style.display=(FT.on&&(state==='play'||state==='pause'))?'block':'none';
+  if(!FT.on||state!=='play'||!FT.b)return;
+  const b=FT.b,e=b.e,m=e.m,p=m.position;
+  /* Start von der Piste */
+  if(FT.tk){FT.T+=dt;spd=Math.min(spd,40+FT.T*32);if(FT.T<2.6)up=0;P.position.y=Math.max(P.position.y,10.7);if(FT.T>5)FT.tk=0;
+   if(FT.T>.3&&!FT.hint){FT.hint=1;chat('Beschleunigen … gleich hochziehen!')}}
+  /* Modell nachträglich einsetzen, falls es erst jetzt fertig geladen ist */
+  FT.swT-=dt;if(!FT.sw&&FT.swT<=0){FT.swT=2;try{const n0=m.children.length;if(window.SJ_SWAP)window.SJ_SWAP('b17',m);if(m.children.length>n0)FT.sw=1}catch(x){FT.sw=1}}
+  if(!e.dead){
+   /* Flug */
+   let tx,tz;
+   if(b.st==='turn'){tx=b.S.x;tz=b.S.z;if(Math.hypot(tx-p.x,tz-p.z)<400)b.st='ing'}
+   if(b.st==='ing'){tx=b.A.x+b.dir.x*700;tz=b.A.z+b.dir.z*700}
+   if(b.st==='ing'||b.st==='out'){
+    if(b.st==='out'){tx=b.A.x+b.dir.x*2000;tz=b.A.z+b.dir.z*2000}
+    const al=(p.x-b.A.x)*b.dir.x+(p.z-b.A.z)*b.dir.z;
+    if(b.st==='ing'&&al>350)b.st='out';
+    if(b.st==='out'&&al>1500){planRun(0);tx=b.S.x;tz=b.S.z}}
+   const want=Math.atan2(tx-p.x,tz-p.z),dh=Math.atan2(Math.sin(want-b.hd),Math.cos(want-b.hd)),mx=.32*dt,st=Math.max(-mx,Math.min(mx,dh));
+   b.hd+=st;b.roll+=(-Math.max(-.5,Math.min(.5,st/dt*2.4))-b.roll)*Math.min(1,2*dt);
+   p.x+=Math.sin(b.hd)*b.spd*dt;p.z+=Math.cos(b.hd)*b.spd*dt;p.y+=(ALT-p.y)*Math.min(1,.6*dt);
+   m.rotation.set(0,b.hd,b.roll);
+   /* Bombenabwurf */
+   if(b.st==='ing'){
+    b.dropT-=dt;
+    const Tf=Math.sqrt(2*(p.y-6)/90),rx=p.x+Math.sin(b.hd)*b.spd*Tf-b.A.x,rz=p.z+Math.cos(b.hd)*b.spd*Tf-b.A.z,
+     along=rx*b.dir.x+rz*b.dir.z,lat=rx*b.dir.z-rz*b.dir.x;
+    if(b.dropT<=0&&b.drop<16&&Math.abs(lat)<70&&along>-130&&along<130){
+     if(!b.warn){b.warn=1;banner('BOMBENABWURF!');chat('Sie wirft Bomben auf die Basis – schieß sie ab!')}
+     dropBomb();b.drop++;b.dropT=.2}}
+   /* Jagdschutz in Formation, bis der Kampf beginnt */
+   if(!FT.rel){
+    if(P.position.distanceTo(p)<1500||e.hp<e.hp0*.985||FT.esc.some(j=>!j.dead&&j.hp<j.hp0)){FT.rel=1;chat('Der Jagdschutz greift an!')}
+    else for(const j of FT.esc){if(j.dead||!en.includes(j))continue;j.m.position.copy(p).add(OFF[j.esc%4].clone().applyAxisAngle(UP,b.hd));j.m.rotation.set(0,b.hd,0);j.cd=Math.max(j.cd,1.5);j.mc=Math.max(j.mc,3)}}
+   /* Rauch bei Schäden */
+   const r=e.hp/e.hp0;
+   if(r<.6&&R()<.5)for(const sx of[-1,1])puff(p.clone().add(V(sx*14,2,-3).applyQuaternion(m.quaternion)));
+   if(r<.3&&R()<.4)fx(p.clone().add(V((R()-.5)*30,2,(R()-.5)*8).applyQuaternion(m.quaternion)),V(0,12,0),.9,5,pm[0]);
+   fortShoot(e,dt);
+   bi1.style.width=(Math.max(0,r)*100).toFixed(1)+'%';
+  }else if(FT.fall){
+   /* Absturz */
+   const f=FT.fall;f.t+=dt;f.vy-=55*dt;f.roll+=(.5+f.t*.5)*dt;b.hd+=.12*dt;
+   p.x+=Math.sin(b.hd)*b.spd*.8*dt;p.z+=Math.cos(b.hd)*b.spd*.8*dt;p.y+=f.vy*dt;
+   m.rotation.set(Math.min(.9,f.t*.35),b.hd,f.roll);
+   puff(p);if(R()<.6)fx(p.clone().add(V((R()-.5)*30,(R()-.5)*6,(R()-.5)*30)),V(R()-.5,R()*.5,R()-.5).multiplyScalar(10),.7,5,pm[0]);
+   bi1.style.width='0%';
+   const gh=Math.hypot(p.x,p.z)<500?6:0;
+   if(p.y<gh+8){
+    for(let i=0;i<10;i++)boom(p.clone().add(V((R()-.5)*90,R()*10,(R()-.5)*90)),3.4,1);
+    boom(p,5);shake=1;scene.remove(m);FT.fires.push({x:p.x,z:p.z,t:25});FT.fall=null;
+    banner('FESTUNG ZERSTÖRT!');chat('Bomber am Boden! Die Basis ist gerettet!');
+    setTimeout(()=>{if(state==='play'&&FT.on){FT.done=1;win()}},2200)}
+  }
+  /* Bomben */
+  for(const q of FT.bombs){q.v.y-=90*dt;q.m.position.addScaledVector(q.v,dt);q.m.quaternion.setFromUnitVectors(Zv,q.v.clone().normalize());if(R()<.3)puff(q.m.position);
+   const gh=Math.hypot(q.m.position.x,q.m.position.z)<500?6.3:.5;
+   if(q.m.position.y<=gh){q.hit=1;impact(q.m.position);scene.remove(q.m)}}
+  FT.bombs=FT.bombs.filter(q=>!q.hit);
+  /* Feuer und Rauch auf zerstörten bzw. beschädigten Gebäuden */
+  for(const f of FT.fires){f.t-=dt;if(R()<.35)fx(V(f.x+(R()-.5)*30,8+R()*6,f.z+(R()-.5)*30),V(0,18,0),1.6,6,smk)}
+  FT.fires=FT.fires.filter(f=>f.t>0);
+  for(const o of FT.bld)if(!o.dead&&o.w&&o.hp<o.hp0*.5&&R()<.12)fx(o.m.position.clone().add(V((R()-.5)*14,16+R()*6,(R()-.5)*14)),V(0,16,0),1.5,5,smk);
+  /* Basis-Zustand */
+  const ig=integrity();
+  bi2.style.width=Math.max(0,Math.min(100,(ig-KEY_LOSE)/(1-KEY_LOSE)*100)).toFixed(1)+'%';bpc.textContent=Math.round(Math.max(0,(ig-KEY_LOSE)/(1-KEY_LOSE))*100)+'%';
+  if(ig<=KEY_LOSE)baseLost();
+ }catch(x){console.warn('Festung-Loop',x)}
+})();
+})();
 })();
 
 /* ====================================================================
@@ -2351,10 +2553,13 @@ die=function(){
     const rows=[['PUNKTE',sc],['ABSCHÜSSE',k]];
     if(wm)rows.push(['WELLE',Math.min(wv,wm),0,'','/'+wm]);
     rows.push(['MÜNZEN',ea,1,'+']);
-    show({win:false,kicker:crash?'ABGESTÜRZT':'ABGESCHOSSEN',title:'GAME OVER',sub:nm,rec,rows,
+    show({win:false,kicker:(window.SJ_FT&&SJ_FT.lost)?'BASIS ZERBOMBT':crash?'ABGESTÜRZT':'ABGESCHOSSEN',title:'GAME OVER',sub:nm,rec,rows,
       b1:'NOCHMAL VERSUCHEN',f1:launch,
       b2:lv<LV.length-1?'NÄCHSTES LEVEL  ▶':'',f2:nextLevel})},1400);
 };
 })();
+</script>
+<script>
+LV.push({n:'FESTUNG ÜBER DER BASIS',w:[],b:0,c:0,fort:1});try{renderUI()}catch(e){}
 </script>
 </body></html>
