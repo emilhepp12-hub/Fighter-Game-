@@ -662,11 +662,13 @@ const PL=[{id:'mig21',n:'MIG-21',d:'FRÜHER ABFANGJÄGER',c:0x9aa7b3,a:0xc23b3b,
 {id:'su57',n:'SU-57',d:'RUSSISCHER TARNKAPPEN-JAGER',c:0x4a5a6a,a:0x9b2d2d,hp:270,gun:38,mis:170,turn:100,spd:108,$:2700},
 {id:'f16',n:'F-16',d:'FIGHTING FALCON',c:0x7d8b99,a:0x2a3342,hp:290,gun:41,mis:185,turn:102,spd:110,$:3500},
 {id:'f18',n:'F/A-18',d:'TRAGERGESTUTZTER JAGER',c:0x636e7a,a:0xe0a030,hp:330,gun:45,mis:200,turn:100,spd:112,$:4400},
+{id:'gripen',n:'JAS 39 GRIPEN',d:'SAAB · SCHWEDISCHER MULTIROLLEN-JÄGER · NUR ULTRA-MODELL · G = FAHRWERK',c:0x8d98a3,a:0x2f3a46,hp:320,gun:46,mis:210,turn:106,spd:116,$:4900},
 {id:'f35',n:'F-35',d:'TARNKAPPEN-MEHRZWECKJAGER',c:0x55606c,a:0x20252c,hp:370,gun:50,mis:225,turn:103,spd:118,$:5500,pt:['H = SCHWEBEN: Triebwerk zeigt nach unten, unbegrenzt lang','Nochmal H (oder Button) = Schweben aus']},
 {id:'f4',n:'F-4 PHANTOM II',d:'LEGENDÄRER ZWEIMOTORIGER ABFANGJÄGER',c:0x7a8794,a:0x2f3a44,hp:360,gun:48,mis:215,turn:95,spd:125,$:5800},
 {id:'sr71',n:'SR-71 BLACKBIRD',d:'MACH-3-AUFKLARER',c:0x14161c,a:0x444c58,hp:400,gun:54,mis:240,turn:85,spd:150,s:[.6,.6,.6],$:6800},
 {id:'f22',n:'F-22 RAPTOR',d:'LUFTUBERLEGENHEITSJAGER',c:0xa0a8b0,a:0x8a929a,hp:450,gun:62,mis:270,turn:110,spd:130,$:8500},
 {id:'a10',n:'A-10 WARTHOG',d:'ERDKAMPFFLUGZEUG · GAU-8 MINIGUN',c:0x6b7560,a:0x3a4048,hp:420,gun:85,mis:160,turn:70,spd:72,$:4000},
+{id:'harrier',n:'AV-8B HARRIER II',d:'SENKRECHTSTARTER · ERDKAMPFJET · NUR ULTRA-MODELL · G = FAHRWERK',c:0x6f7a68,a:0x2d322b,hp:340,gun:54,mis:190,turn:100,spd:96,$:4300},
 {id:'f14',n:'F-14 TOMCAT',d:'SCHWENKFLÜGEL-JÄGER · V = FLÜGEL',c:0x6f7b88,a:0x2a3038,hp:380,gun:52,mis:230,turn:100,spd:120,$:6200},
 {id:'f104',n:'F-104 STARFIGHTER',d:'MACH-2-ABFANGJÄGER',c:0xaab4bf,a:0x333a44,hp:250,gun:44,mis:180,turn:70,spd:150,$:5200},
 {id:'su34',n:'SU-34',d:'FULLBACK · SCHWERER JAGDBOMBER · G = FAHRWERK',c:0x6b7a6a,a:0x2a2f2a,hp:480,gun:72,mis:230,turn:88,spd:115,$:9500},
@@ -1112,7 +1114,7 @@ function splitGear(sc,cfg){
    M=src.matrixWorld,NM=new THREE.Matrix3().getNormalMatrix(M),flip=M.determinant()<0,n=ix?ix.length:pos.count,rest=[],B=cfg.parts.map(()=>[]);
   for(let t=0;t<n;t+=3){const T=[ix?ix[t]:t,ix?ix[t+1]:t+1,ix?ix[t+2]:t+2];let cx=0,cy=0,cz=0;
    for(const k of T){v.fromBufferAttribute(pos,k).applyMatrix4(M);cx+=v.x;cy+=v.y;cz+=v.z}cx/=3;cy/=3;cz/=3;
-   let hit=-1;cfg.parts.forEach((q,i)=>{const b=q.box;if(hit<0&&cx>=b[0]&&cx<=b[3]&&cy>=b[1]&&cy<=b[4]&&cz>=b[2]&&cz<=b[5])hit=i});
+   let hit=-1;cfg.parts.forEach((q,i)=>{if(hit>=0)return;if(q.tris){const ti=t/3;if(q.tris.some(r=>ti>=r[0]&&ti<r[1]))hit=i;return}const b=q.box;if(cx>=b[0]&&cx<=b[3]&&cy>=b[1]&&cy<=b[4]&&cz>=b[2]&&cz<=b[5])hit=i});
    if(hit<0)rest.push(T[0],T[1],T[2]);else B[hit].push(T)}
   geo.setIndex(rest);
   cfg.parts.forEach((q,i)=>{const L=B[i];if(!L.length)return;const P3=[],N3=[],U=[],U2=[],h=q.hinge;
@@ -2576,5 +2578,97 @@ die=function(){
 </script>
 <script>
 LV.push({n:'FESTUNG ÜBER DER BASIS',w:[],b:0,c:0,fort:1});try{renderUI()}catch(e){}
+</script>
+<script>
+/* ===== KOLLISION: Gegner kommen nicht mehr durch Berge, Bunker-Inseln und andere Schiffe =====
+   Träger + Zerstörer: schauen voraus, drehen rechtzeitig ab, bleiben notfalls stehen statt durchzufahren.
+   Gegner-Jets: fliegen über Berge, Bunker und Schiffsaufbauten hinweg. Online-Spiele bleiben unberührt. */
+(function(){
+/* Fußabdrücke in Schiffskoordinaten: [x, z, Radius] */
+const FP={
+ big:[[4,-122,28],[4,-84,31],[4,-42,31],[4,0,31],[4,42,31],[4,84,31],[4,122,26]],
+ ship:[[0,-70,9],[0,-48,11],[0,-24,11],[0,0,11],[0,24,11],[0,48,11],[0,68,10],[0,78,6]]};
+const MAG=[0,.2,.4,.65,.9,1.25,1.7,2.3,3.1416],ST=1,MS=30;   /* Vorhersage: 30 Schritte à 1 s */
+const ang=a=>Math.atan2(Math.sin(a),Math.cos(a));
+let BUD=0,kT=0,RR=0,CTX={isl:[],st:[],sh:[]};const fw=new THREE.Vector3();
+
+function circlesOf(e,x,z,ry){const f=e.big?FP.big:FP.ship,c=Math.cos(ry),s=Math.sin(ry);
+ return f.map(q=>[x+q[0]*c+q[1]*s,z-q[0]*s+q[1]*c,q[2]])}
+/* Land (Inseln/Berge) in einem Kreis? */
+function landAt(x,z,r,isl){
+ for(const o of isl){const u=o.userData;if(!u||!u.hf)continue;
+  const lx=x-o.position.x,lz=z-o.position.z,rr=u.r*1.45+r;if(lx*lx+lz*lz>rr*rr)continue;
+  if(u.hf(lx,lz)>.2)return true;
+  for(let i=0;i<8;i++){const a=i*.7854,cx=Math.cos(a),sx=Math.sin(a);
+   if(u.hf(lx+cx*r,lz+sx*r)>.2)return true;if(i%2&&u.hf(lx+cx*r*.5,lz+sx*r*.5)>.2)return true}}
+ return false}
+function statics(self){const L=[];
+ for(const o of en){if(o===self||o.dead||!o.g||o.big||o.ship||o.bomber||!o.m)continue;
+  if(o.m.position.y>2)continue;L.push([o.m.position.x,o.m.position.z,o.base?100:62])}
+ return L}
+function blocked(e,x,z,ry,ctx){
+ for(const c of circlesOf(e,x,z,ry)){
+  if(landAt(c[0],c[1],c[2]+(e.big?16:10),ctx.isl))return 1;
+  for(const s of ctx.st)if(Math.hypot(c[0]-s[0],c[1]-s[1])<c[2]+s[2]+6)return 2;
+  for(const o of ctx.sh){if(o.e===e)continue;
+   if(Math.abs(o.e.m.position.x-x)>420||Math.abs(o.e.m.position.z-z)>420)continue;
+   for(const q of o.cs)if(Math.hypot(c[0]-q[0],c[1]-q[1])<c[2]+q[2]+12)return 3}}
+ return 0}
+/* Kurs-Vorhersage: erst mit der echten Drehgeschwindigkeit zum Wunschkurs einschwenken, dann geradeaus.
+   Liefert die Zahl der freien Schritte (MS = alles frei). So wird auch das Ausschwenken des langen Rumpfes geprüft. */
+function plan(e,hw,ctx){const om=(e.big?.16:.32)*ST,sp=(e.big?7:9)*ST;
+ let x=e.m.position.x,z=e.m.position.z,h=e.m.rotation.y;
+ for(let k=0;k<MS;k++){const d=ang(hw-h);h+=Math.max(-om,Math.min(om,d));x+=Math.sin(h)*sp;z+=Math.cos(h)*sp;
+  if(--BUD<0||blocked(e,x,z,h,ctx))return k}
+ return MS}
+/* Neuen Kurs wählen: kleinste Kursänderung, deren Vorhersage komplett frei ist */
+function steer(e,ctx){const h=e.m.rotation.y;BUD=150;   /* Rechenbudget je Aufruf: keine Ruckler */
+ if(e._w!==undefined){if(plan(e,e._w,ctx)===MS)return}
+ else if(plan(e,h,ctx)===MS)return;
+ let best=-1,bh=h;
+ out:for(const m of MAG)for(const s of[e._sg,-e._sg]){if(m===0&&s<0)continue;
+  const hh=h+m*s,n=plan(e,hh,ctx);if(n>best){best=n;bh=hh}if(n===MS)break out}
+ e._w=bh;const d=Math.sign(ang(bh-h));if(d)e._sg=d}
+/* Start in Insel/Bunker/Schiff: nächstgelegenen freien Platz suchen */
+function plan2(e,x,z,h,ctx){const sp=(e.big?7:9)*ST;for(let k=0;k<MS;k++){x+=Math.sin(h)*sp;z+=Math.cos(h)*sp;if(blocked(e,x,z,h,ctx))return k}return MS}
+function relocate(e,ctx){const p=e.m.position,h=e.m.rotation.y,x0=p.x,z0=p.z;
+ for(let r=60;r<=2400;r+=60)for(let a=0;a<6.2832;a+=.5236){const x=x0+Math.cos(a)*r,z=z0+Math.sin(a)*r;
+  if(!blocked(e,x,z,h,ctx)&&plan2(e,x,z,h,ctx)>=12){p.x=x;p.z=z;return}}}
+function checks(S){
+const near=wrap.filter(o=>{const u=o.userData;if(!u||!u.hf)return false;const rr=1000+u.r*1.5;
+  return S.some(e=>{const dx=e.m.position.x-o.position.x,dz=e.m.position.z-o.position.z;return dx*dx+dz*dz<rr*rr})});
+ const ctx={isl:near,st:statics(null),sh:S.map(e=>({e,cs:circlesOf(e,e.m.position.x,e.m.position.z,e.m.rotation.y)}))};
+ for(const e of S){const p=e.m.position,ry=e.m.rotation.y;
+  if(!e._ki){e._ki=1;e._sg=Math.random()<.5?1:-1;if(blocked(e,p.x,p.z,ry,ctx))relocate(e,ctx)}
+  else if(blocked(e,p.x,p.z,ry,ctx)){if(e._ls){p.x=e._ls[0];p.z=e._ls[1]}e._force=1}
+  else e._ls=[p.x,p.z];
+  const o=ctx.sh.find(q=>q.e===e);if(o)o.cs=circlesOf(e,p.x,p.z,e.m.rotation.y);
+  if(e._force||S[RR%S.length]===e){e._force=0;steer(e,ctx)}}
+ RR++;CTX=ctx}
+/* Mindesthöhe für Jets über Land, Bunkern und Schiffen */
+function floorAt(x,z){let f=0;
+ for(const o of wrap){const u=o.userData;if(!u||!u.hf)continue;
+  const lx=x-o.position.x,lz=z-o.position.z,rr=u.r*1.45;if(lx*lx+lz*lz>rr*rr)continue;
+  const h=u.hf(lx,lz);if(h>0&&h+16>f)f=h+16}
+ for(const s of CTX.st)if(Math.hypot(x-s[0],z-s[1])<s[2]&&f<46)f=46;
+ for(const o of CTX.sh){const hh=o.e.big?66:52;if(f>=hh)continue;
+  for(const c of o.cs)if(Math.hypot(x-c[0],z-c[1])<c[2]+8){f=hh;break}}
+ return f}
+function KOL(dt){
+ if(MP||state!=='play')return;
+ const S=en.filter(e=>e.g&&!e.dead&&!e.bomber&&e.m&&(e.big||e.ship));
+ for(const e of S){if(e._w===undefined)continue;
+  const d=ang(e._w-e.m.rotation.y),om=(e.big?.16:.32)*dt;
+  e.m.rotation.y+=Math.max(-om,Math.min(om,d));if(Math.abs(d)<.02)e._w=undefined}
+ kT-=dt;if(kT<=0){kT=.1;checks(S)}
+ for(const e of en){if(e.g||e.dead||!e.m||e.bomber)continue;
+  const p=e.m.position,v=e.spd||(e.boss?90:150);fw.set(0,0,1).applyQuaternion(e.m.quaternion);
+  const f0=floorAt(p.x,p.z);if(p.y<f0)p.y=f0;
+  let w=0;for(const t of[.45,.9,1.5]){const f=floorAt(p.x+fw.x*v*t,p.z+fw.z*v*t)-45*t;if(f>w)w=f}
+  if(p.y<w)p.y=Math.min(w,p.y+90*dt)}}
+const _up=update;update=function(dt){_up(dt);try{KOL(dt)}catch(e){console.warn('Kollision',e)}};
+/* Cockpit-Augenpunkt der beiden neuen Jets */
+const _ey=eyeFor;eyeFor=function(p){if(p.id==='gripen')return V(0,.2,2.95);if(p.id==='harrier')return V(0,.64,3.7);return _ey(p)};
+})();
 </script>
 </body></html>
