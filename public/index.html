@@ -1956,8 +1956,19 @@ ET.push({id:'b17',c:0x6b7058,a:0x2b3028,h:1,s:1,t:1,sc:null,f:1}); /* registrier
 const ALT=330,SPD=82,KEY_LOSE=.2,BDM=85,BRAD=44,SC=2.1;
 const bombG=new THREE.CylinderGeometry(.55,.55,3.2,8).rotateX(Math.PI/2),bombM=new THREE.MeshLambertMaterial({color:0x2d3033});
 /* Bordkanonen der B-17: Position (Modelleinheiten), Schussachse, Feuerbogen */
-const TUR=[[0,-.6,11.5,0,0,1],[0,-1.7,9.5,0,-.3,1],[0,2.4,4.5,0,1,0],[0,-2.3,2.2,0,-1,0],[-2.2,.2,-3.6,-1,0,-.15],[2.2,.2,-3.6,1,0,-.15],[0,2.3,-1.2,0,1,-.4],[0,.8,-11.8,0,0,-1]]
- .map(t=>({p:V(t[0],t[1],t[2]),a:V(t[3],t[4],t[5]).normalize(),cd:1+R()}));
+const TUR=[[0,-1.5,11.2,0,0,1],[0,-2.9,10.1,0,-.35,1],[0,.9,6.3,0,1,0],[0,-3.4,.1,0,-1,0],[-1.45,-.7,-3.6,-1,0,-.15],[1.45,-.7,-3.6,1,0,-.15],[0,.7,-1.0,0,1,-.4],[0,-.5,-11.4,0,0,-1]]
+ .map(t=>({p:V(t[0],t[1],t[2]),a:V(t[3],t[4],t[5]).normalize(),cd:1+R(),rec:0,gun:null,ms:[]}));
+const tuM=new THREE.MeshLambertMaterial({color:0x3a3f33}),baM=new THREE.MeshLambertMaterial({color:0x14161a});
+const tuG=new THREE.SphereGeometry(.55,12,8),baG=new THREE.CylinderGeometry(.05,.05,1.2,6).rotateX(Math.PI/2);
+/* sichtbare, drehbare Geschütztürme an die B-17 setzen */
+function buildTurrets(g){
+ for(const t of TUR){
+  const h=new THREE.Group();h.position.copy(t.p);
+  const dome=new THREE.Mesh(tuG,tuM);h.add(dome);
+  const gun=new THREE.Group();gun.quaternion.setFromUnitVectors(Zv,t.a);
+  for(const sx of[-.14,.14]){const br=new THREE.Mesh(baG,baM);br.position.set(sx,0,.85);gun.add(br)}
+  h.add(gun);g.add(h);t.gun=gun;t.ms=[];h.traverse(o=>{if(o.isMesh)t.ms.push(o)});t.h=h;t.rec=0}
+}
 
 /* ---------- Oberfläche ---------- */
 const css=document.createElement('style');
@@ -2004,7 +2015,7 @@ function spawnFort(){
  const H=5200*D.h,e={g:1,bomber:1,m:g,hp:H,hp0:H,spin:null,r2:2000,rng:0,cd:9,mk,dead:0,big:false};
  FT.b={hd:Math.PI,roll:0,spd:SPD,dropT:0,st:'ing',run:0,phi:Math.PI,e};
  planRun(1);g.position.set(FT.b.S.x,ALT,FT.b.S.z);g.rotation.set(0,FT.b.hd,0);
- scene.add(g);en.push(e);NEW.push(g);
+ scene.add(g);en.push(e);NEW.push(g);buildTurrets(g);
  /* Jagdschutz */
  const ty=[0,0,1,0],n=3+(D.h>1.2?1:0);
  for(let i=0;i<n;i++){spawn(ty[i]);const j=en[en.length-1];if(!j||j.g||j.bomber)continue;j.esc=i;FT.esc.push(j)}
@@ -2037,15 +2048,19 @@ function baseLost(){
  shake=1;die();P.visible=true;
  $('msg').textContent='DEINE BASIS WURDE ZERBOMBT! Punkte: '+score+' · +'+gain(score)+' Münzen';
 }
+const qI=new THREE.Quaternion(),qT=new THREE.Quaternion();
 function fortShoot(e,dt){
  const q=e.m.quaternion,pw=e.m.position,fw=V(0,0,1).applyQuaternion(P.quaternion);let fired=0;
+ qI.copy(q).invert();
  for(const t of TUR){
-  t.cd-=dt;if(t.cd>0)continue;
   const gp=t.p.clone().multiplyScalar(SC).applyQuaternion(q).add(pw),to=P.position.clone().sub(gp),dist=to.length();
-  if(dist>950){t.cd=.25;continue}
-  const dir=to.clone().normalize(),ax=t.a.clone().applyQuaternion(q);
-  if(ax.dot(dir)<-.35){t.cd=.12;continue}
-  t.cd=(.35+R()*.3)/D.f;fired++;
+  const dir=to.clone().normalize(),ax=t.a.clone().applyQuaternion(q),ok=dist<=950&&ax.dot(dir)>=-.35;
+  /* Turm ausrichten: auf den Spieler, sonst zurück in Ruhelage */
+  if(t.gun){qT.setFromUnitVectors(Zv,ok?dir.clone().applyQuaternion(qI):t.a);t.gun.quaternion.slerp(qT,Math.min(1,9*dt));
+   t.rec=Math.max(0,t.rec-dt*6);t.gun.position.z=-.18*t.rec}
+  t.cd-=dt;if(t.cd>0)continue;
+  if(!ok){t.cd=.12;continue}
+  t.cd=(.35+R()*.3)/D.f;fired++;t.rec=1;
   const j=7+dist*.02;
   for(let i=0;i<3;i++){
    const m=new THREE.Mesh(bg,bmE);m.position.copy(gp).add(V((R()-.5)*1.2,(R()-.5)*1.2,(R()-.5)*1.2));
@@ -2084,7 +2099,7 @@ let last=performance.now();
   if(FT.tk){FT.T+=dt;spd=Math.min(spd,40+FT.T*32);if(FT.T<2.6)up=0;P.position.y=Math.max(P.position.y,10.7);if(FT.T>5)FT.tk=0;
    if(FT.T>.3&&!FT.hint){FT.hint=1;chat('Beschleunigen … gleich hochziehen!')}}
   /* Modell nachträglich einsetzen, falls es erst jetzt fertig geladen ist */
-  FT.swT-=dt;if(!FT.sw&&FT.swT<=0){FT.swT=2;try{const n0=m.children.length;if(window.SJ_SWAP)window.SJ_SWAP('b17',m);if(m.children.length>n0)FT.sw=1}catch(x){FT.sw=1}}
+  FT.swT-=dt;if(!FT.sw&&FT.swT<=0){FT.swT=2;try{const n0=m.children.length;if(window.SJ_SWAP)window.SJ_SWAP('b17',m);if(m.children.length>n0)FT.sw=1;for(const q of TUR)for(const o of q.ms)o.visible=true}catch(x){FT.sw=1}}
   if(!e.dead){
    /* Flug */
    let tx,tz;
