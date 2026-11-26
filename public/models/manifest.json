@@ -1022,6 +1022,26 @@
      }
     ]
    }
+  },
+  "rafale": {
+   "file": "rafale.glb",
+   "rotY": 90,
+   "length": 15.3,
+   "ultraOnly": true
+  },
+  "f15e": {
+   "file": "f15e.glb",
+   "rotY": -90,
+   "length": 19.4,
+   "ultraOnly": true,
+   "drop": "landingOn"
+  },
+  "su35": {
+   "file": "su35.glb",
+   "rotY": -90,
+   "length": 21.9,
+   "ultraOnly": true,
+   "drop": "landingOn"
   }
  }
 }
